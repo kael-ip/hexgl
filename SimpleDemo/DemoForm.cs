@@ -19,7 +19,7 @@ namespace HexTex.OpenGL.SimpleDemo {
             this.SetStyle(ControlStyles.AllPaintingInWmPaint, true);
             //this.SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
             //this.DoubleBuffered = true;
-                        this.MouseMove += new MouseEventHandler(TestFullScreen2_MouseMove);
+                        this.MouseMove += new MouseEventHandler(DemoForm_MouseMove);
 
             this.demo = demo;
         }
@@ -51,7 +51,7 @@ namespace HexTex.OpenGL.SimpleDemo {
                 this.BeginInvoke(new MethodInvoker(delegate { this.Close(); }));
             }
         }
-        void TestFullScreen2_MouseMove(object sender, MouseEventArgs e) {
+        void DemoForm_MouseMove(object sender, MouseEventArgs e) {
             var p = this.Bounds.Location;
             p.Offset(-this.Bounds.Width / 2, -this.Bounds.Height / 2);
             p.Offset(e.Location);
