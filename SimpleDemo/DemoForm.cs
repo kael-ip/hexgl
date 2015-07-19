@@ -8,10 +8,10 @@ namespace HexTex.OpenGL.SimpleDemo {
 
     class DemoForm : Form {
         DemoBase demo;
-        GLGraphics savedGL;
-        IntPtr savedHdc;
+        Context glContext;
         Point viewOffset = Point.Empty;
-        public DemoForm(DemoBase demo){
+        public DemoForm(DemoBase demo) {
+            this.demo = demo;
             this.FormBorderStyle = FormBorderStyle.None;
             this.Bounds = Screen.PrimaryScreen.Bounds;
             this.TopMost = true;
@@ -19,37 +19,43 @@ namespace HexTex.OpenGL.SimpleDemo {
             this.SetStyle(ControlStyles.AllPaintingInWmPaint, true);
             //this.SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
             //this.DoubleBuffered = true;
-                        this.MouseMove += new MouseEventHandler(DemoForm_MouseMove);
-
-            this.demo = demo;
+            this.MouseMove += new MouseEventHandler(DemoForm_MouseMove);
         }
         protected override void OnHandleCreated(EventArgs e) {
             base.OnHandleCreated(e);
-            savedHdc = GLGraphics.GetDC(this.Handle);
-            savedGL = new GLGraphics(savedHdc, this.Size);
-            Console.WriteLine(string.Join("\n", savedGL.GetInfo()));
-            savedGL.Execute(x => {
-                demo.Prepare(x);
+            glContext = Context.Create(this.Handle);
+            glContext.Execute(gl => {
+                Console.WriteLine(string.Join("\n", GetInfo(gl)));
+                demo.Prepare(gl);
             });
         }
         protected override void OnHandleDestroyed(EventArgs e) {
             base.OnHandleDestroyed(e);
-            savedGL.Dispose();
-            GLGraphics.ReleaseDC(this.Handle, savedHdc);
+            glContext.Dispose();
+            glContext = null;
         }
         protected override void OnPaintBackground(PaintEventArgs e) {
             //base.OnPaintBackground(e);
         }
         protected override void OnPaint(PaintEventArgs e) {
             //base.OnPaint(e);
-            if (savedGL == null) return;
-            savedGL.Execute(x => {
-                demo.Redraw(x);
+            if (glContext == null) return;
+            glContext.Execute(gl => {
+                demo.Redraw(gl);
             });
             this.Invalidate();
+            System.Threading.Thread.Sleep(0);
             if (Control.MouseButtons == MouseButtons.Right) {
                 this.BeginInvoke(new MethodInvoker(delegate { this.Close(); }));
             }
+        }
+        private string[] GetInfo(IGL gl) {
+            return new string[]{
+                GetString(gl, GL.VENDOR),
+                GetString(gl, GL.RENDERER),
+                GetString(gl, GL.VERSION),
+                GetString(gl, GL.EXTENSIONS)
+            };
         }
         void DemoForm_MouseMove(object sender, MouseEventArgs e) {
             var p = this.Bounds.Location;
@@ -58,39 +64,24 @@ namespace HexTex.OpenGL.SimpleDemo {
             viewOffset = p;
             this.Invalidate();
         }
-    }
-
-    class GLGraphics {
-        private IntPtr savedHdc;
-        private Size size;
-
-        public GLGraphics(IntPtr savedHdc, Size size) {
-            this.savedHdc = savedHdc;
-            this.size = size;
-        }
-        internal static IntPtr GetDC(IntPtr intPtr) {
-            throw new NotImplementedException();
-        }
-
-        internal string[] GetInfo() {
-            throw new NotImplementedException();
-        }
-
-        internal void Dispose() {
-            throw new NotImplementedException();
-        }
-
-        internal static void ReleaseDC(IntPtr intPtr, IntPtr savedHdc) {
-            throw new NotImplementedException();
-        }
-
-        internal void Execute(Action<IGL> action) {
-            throw new NotImplementedException();
+        public static string GetString(IGL gl, uint name) {
+            IntPtr ptr = gl.GetString(name);
+            return System.Runtime.InteropServices.Marshal.PtrToStringAnsi(ptr);
         }
     }
 
     abstract class DemoBase {
         public abstract void Prepare(IGL gl);
         public abstract void Redraw(IGL gl);
+    }
+
+    class EmptyDemo : DemoBase {
+        public override void Prepare(IGL gl) {
+        }
+        public override void Redraw(IGL gl) {
+            gl.ClearColor(0, 0, 0, 0);
+            gl.Clear(GL.COLOR_BUFFER_BIT);
+            gl.Finish();
+        }
     }
 }

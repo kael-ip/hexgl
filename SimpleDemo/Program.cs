@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 
-namespace SimpleDemo {
+namespace HexTex.OpenGL.SimpleDemo {
     static class Program {
         /// <summary>
         /// The main entry point for the application.
@@ -11,7 +11,7 @@ namespace SimpleDemo {
         static void Main() {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            Application.Run(new DemoForm(new EmptyDemo()));
         }
     }
 }

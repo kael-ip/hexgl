@@ -96,6 +96,16 @@ namespace HexTex.OpenGL {
             }
         }
 
+        public const string LibraryName = "opengl32.dll";
+        private static IntPtr hModuleOpenGL;
+
+        static WGL() {
+            try {
+                Finish();//otherwise GL context creation may fail
+            } catch { }
+            hModuleOpenGL = WGL.GetModuleHandle(WGL.LibraryName);
+        }
+
         [DllImport("gdi32.dll")]
         public static extern int DescribePixelFormat(IntPtr hdc, int iPixelFormat, int nBytes, [In, Out] PIXELFORMATDESCRIPTOR ppfd);
         [DllImport("gdi32.dll")]
@@ -105,36 +115,29 @@ namespace HexTex.OpenGL {
         [DllImport("gdi32.dll")]
         public static extern bool SwapBuffers(IntPtr hdc);
 
-        [DllImport("opengl32.dll", EntryPoint = "wglCreateContext")]
+        [DllImport(LibraryName, EntryPoint = "wglCreateContext")]
         public static extern IntPtr CreateContext(IntPtr hdc);
-        [DllImport("opengl32.dll", EntryPoint = "wglDeleteContext")]
+        [DllImport(LibraryName, EntryPoint = "wglDeleteContext")]
         public static extern bool DeleteContext(IntPtr hglrc);
-        [DllImport("opengl32.dll", EntryPoint = "wglMakeCurrent")]
+        [DllImport(LibraryName, EntryPoint = "wglMakeCurrent")]
         public static extern bool MakeCurrent(IntPtr hdc, IntPtr hglrc);
-        [DllImport("opengl32.dll", EntryPoint = "wglGetProcAddress")]
-        private static extern IntPtr GetProcAddress(String name);
+        [DllImport(LibraryName, EntryPoint = "wglGetProcAddress")]
+        public static extern IntPtr GetProcAddress(String name);
+        [DllImport(WGL.LibraryName, EntryPoint = "glFinish")]
+        private static extern void Finish();
 
         [DllImport("User32.dll")]
         public static extern IntPtr GetDC(IntPtr hwnd);
         [DllImport("User32.dll")]
         public static extern void ReleaseDC(IntPtr hwnd, IntPtr dc);
 
-        [DllImport("gdi32.dll")]
-        public static extern IntPtr CreateDC(string lpszDriver, string lpszDevice, string lpszOutput, IntPtr lpInitData);
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+        private static extern IntPtr GetModuleHandle(string moduleName);
+        [DllImport("kernel32.dll", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
+        private static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
 
-        private static Dictionary<Type, object> delegates = new Dictionary<Type, object>();
-        public static T GetDelegate<T>() {
-            var type = typeof(T);
-            object d = null;
-            if (!delegates.TryGetValue(type, out d)) {
-                var name = string.Concat("gl", type.Name);
-                var ptr = GetProcAddress(name);
-                if (ptr == IntPtr.Zero || ptr == new IntPtr(1) || ptr == new IntPtr(2)) throw new NotSupportedException(name);
-                d = Marshal.GetDelegateForFunctionPointer(ptr, type);
-                delegates.Add(type, d);
-            }
-            return (T)d;
+        public static IntPtr GetModuleProcAddress(string procName) {
+            return GetProcAddress(hModuleOpenGL, procName);
         }
-
     }
 }

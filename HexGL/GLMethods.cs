@@ -100,7 +100,7 @@ namespace HexTex.OpenGL {
         void GetShaderInfoLog(uint shader, int bufSize, IntPtr /*int*/ length, IntPtr /*char*/ infoLog);
         void GetShaderPrecisionFormat(/*GLenum*/uint shadertype, /*GLenum*/uint precisiontype, IntPtr /*int*/ range, IntPtr /*int*/ precision);
         void GetShaderSource(uint shader, int bufSize, IntPtr /*int*/ length, IntPtr /*char*/ source);
-        IntPtr _GetString(uint name);
+        IntPtr GetString(uint name);
         void GetTexParameterfv(/*GLenum*/uint target, /*GLenum*/uint pname, IntPtr /*float*/ _params);
         void GetTexParameteriv(/*GLenum*/uint target, /*GLenum*/uint pname, IntPtr /*int*/ _params);
         void GetUniformfv(uint program, int location, IntPtr /*float*/ _params);

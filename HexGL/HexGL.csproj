@@ -33,7 +33,10 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CodeGenerator.cs" />
+    <Compile Include="Context.cs" />
     <Compile Include="GLConstants.cs" />
+    <Compile Include="GLException.cs" />
     <Compile Include="GLMethods.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WGL.cs" />
