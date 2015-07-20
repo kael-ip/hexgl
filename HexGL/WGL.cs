@@ -125,6 +125,8 @@ namespace HexTex.OpenGL {
         public static extern IntPtr GetProcAddress(String name);
         [DllImport(WGL.LibraryName, EntryPoint = "glFinish")]
         private static extern void Finish();
+        [DllImport(WGL.LibraryName, EntryPoint = "glGetError")]
+        internal static extern uint GetError();
 
         [DllImport("User32.dll")]
         public static extern IntPtr GetDC(IntPtr hwnd);

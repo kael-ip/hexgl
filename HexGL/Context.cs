@@ -16,7 +16,10 @@ namespace HexTex.OpenGL {
         }
         private static Context current;
         public static Context Create(IntPtr hwnd) {
-            return new Context(hwnd);
+            return Create(hwnd, false);
+        }
+        public static Context Create(IntPtr hwnd, bool isDebug) {
+            return new Context(hwnd, isDebug);
         }
         IntPtr hwnd;
         IntPtr hdc;
@@ -24,7 +27,7 @@ namespace HexTex.OpenGL {
         //bool isWindowDC;
         bool isDoubleBuffered;
         IGL gl;
-        private Context(IntPtr hwnd) {
+        private Context(IntPtr hwnd, bool isDebug) {
             this.hwnd = hwnd;
             //isWindowDC = true;
             hdc = WGL.GetDC(hwnd);
@@ -34,7 +37,7 @@ namespace HexTex.OpenGL {
             //SelectPixelFormat(24, 0, 24, 8, false, false);
             hglrc = WGL.CreateContext(hdc);
             if (hglrc == IntPtr.Zero) throw new InvalidOperationException("HGLRC failed");
-            gl = CreateBindingImplementor();
+            gl = CreateBindingImplementor(isDebug);
         }
         private void SelectPixelFormatAuto() {
             WGL.PIXELFORMATDESCRIPTOR pfd = new WGL.PIXELFORMATDESCRIPTOR();
@@ -96,28 +99,33 @@ namespace HexTex.OpenGL {
             WGL.DeleteContext(hglrc);
             WGL.ReleaseDC(hwnd, hdc);
         }
-        private IGL CreateBindingImplementor() {
-            var provider = new GLMethodProvider(this, glDelegates);
+        private IGL CreateBindingImplementor(bool isDebug) {
+            IImplProvider provider;
+            if (isDebug) {
+                provider = new GLMethodProviderDebug(this, glDelegates);
+            } else {
+                provider = new GLMethodProvider(this, glDelegates);
+            }
             var impl = (IGL)Activator.CreateInstance(implType, provider);
             return impl;
         }
 
         public class GLMethodProvider : IImplProvider {
-            private Context owner;
+            protected Context owner;
             private Dictionary<System.Reflection.MethodInfo, Type> delegateTypes;
             private Dictionary<Type, object> delegates = new Dictionary<Type, object>();
             public GLMethodProvider(Context owner, Dictionary<System.Reflection.MethodInfo, Type> dict) {
                 this.owner = owner;
                 this.delegateTypes = dict;
             }
-            public object Invoke(Type dtype, object[] args) {
+            public virtual object Invoke(Type dtype, object[] args) {
                 var d = GetDelegate(dtype);
                 return d.DynamicInvoke(args);
             }
             T GetDelegate<T>() {
                 return (T)(object)GetDelegate(typeof(T));
             }
-            Delegate GetDelegate(Type type) {
+            protected Delegate GetDelegate(Type type) {
                 object d = null;
                 if (!delegates.TryGetValue(type, out d)) {
                     var name = string.Concat("gl", type.Name);
@@ -130,6 +138,16 @@ namespace HexTex.OpenGL {
                     delegates.Add(type, d);
                 }
                 return (Delegate)d;
+            }
+        }
+        public class GLMethodProviderDebug : GLMethodProvider {
+            public GLMethodProviderDebug(Context owner, Dictionary<System.Reflection.MethodInfo, Type> dict) : base(owner, dict) { }
+            public override object Invoke(Type dtype, object[] args) {
+                if (!owner.IsCurrent) throw new InvalidOperationException("Outside context call");
+                object result = base.Invoke(dtype, args);
+                uint error = WGL.GetError();
+                if (error != 0) throw new GLException(error);
+                return result;
             }
         }
     }

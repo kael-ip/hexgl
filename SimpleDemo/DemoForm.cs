@@ -23,7 +23,7 @@ namespace HexTex.OpenGL.SimpleDemo {
         }
         protected override void OnHandleCreated(EventArgs e) {
             base.OnHandleCreated(e);
-            glContext = Context.Create(this.Handle);
+            glContext = Context.Create(this.Handle, true);
             glContext.Execute(gl => {
                 Console.WriteLine(string.Join("\n", GetInfo(gl)));
                 demo.Prepare(gl);
@@ -43,6 +43,7 @@ namespace HexTex.OpenGL.SimpleDemo {
             glContext.Execute(gl => {
                 demo.Redraw(gl);
             });
+            glContext.SwapBuffers();
             this.Invalidate();
             System.Threading.Thread.Sleep(0);
             if (Control.MouseButtons == MouseButtons.Right) {

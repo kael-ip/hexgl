@@ -11,7 +11,7 @@ namespace HexTex.OpenGL.SimpleDemo {
         static void Main() {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new DemoForm(new EmptyDemo()));
+            Application.Run(new DemoForm(new Demo1()));
         }
     }
 }
