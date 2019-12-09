@@ -38,7 +38,9 @@
     <Compile Include="GLConstants.cs" />
     <Compile Include="GLException.cs" />
     <Compile Include="GLMethods.cs" />
+    <Compile Include="Helper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repository.cs" />
     <Compile Include="WGL.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

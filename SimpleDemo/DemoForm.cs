@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
@@ -40,9 +41,12 @@ namespace HexTex.OpenGL.SimpleDemo {
         protected override void OnPaint(PaintEventArgs e) {
             //base.OnPaint(e);
             if (glContext == null) return;
+            var sw = Stopwatch.StartNew();
             glContext.Execute(gl => {
                 demo.Redraw(gl);
             });
+            sw.Stop();
+            Console.WriteLine("GL redraw: {0} ms", sw.ElapsedMilliseconds);
             glContext.SwapBuffers();
             this.Invalidate();
             System.Threading.Thread.Sleep(0);
@@ -68,21 +72,6 @@ namespace HexTex.OpenGL.SimpleDemo {
         public static string GetString(IGL gl, uint name) {
             IntPtr ptr = gl.GetString(name);
             return System.Runtime.InteropServices.Marshal.PtrToStringAnsi(ptr);
-        }
-    }
-
-    abstract class DemoBase {
-        public abstract void Prepare(IGL gl);
-        public abstract void Redraw(IGL gl);
-    }
-
-    class EmptyDemo : DemoBase {
-        public override void Prepare(IGL gl) {
-        }
-        public override void Redraw(IGL gl) {
-            gl.ClearColor(0, 0, 0, 0);
-            gl.Clear(GL.COLOR_BUFFER_BIT);
-            gl.Finish();
         }
     }
 }

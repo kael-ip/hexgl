@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace HexTex.OpenGL.SimpleDemo {
+namespace HexTex.OpenGL {
 
     public abstract class VertexArrayBase {
         private int length;
@@ -162,17 +162,6 @@ namespace HexTex.OpenGL.SimpleDemo {
         };
     }
 
-    static class Helper {
-        public static void WithPinned(object obj, Action<IntPtr> action) {
-            GCHandle pinned = GCHandle.Alloc(obj, GCHandleType.Pinned);
-            try {
-                action(pinned.AddrOfPinnedObject());
-            } finally {
-                pinned.Free();
-            }
-        }
-    }
-
     static class GLMath {
 
         public static float[] Frustum(double l, double r, double b, double t, double n, double f) {
@@ -228,6 +217,21 @@ namespace HexTex.OpenGL.SimpleDemo {
                 }
             }
             return pixels;
+        }
+    }
+
+    abstract class DemoBase {
+        public abstract void Prepare(IGL gl);
+        public abstract void Redraw(IGL gl);
+    }
+
+    class EmptyDemo : DemoBase {
+        public override void Prepare(IGL gl) {
+        }
+        public override void Redraw(IGL gl) {
+            gl.ClearColor(0, 0, 0, 0);
+            gl.Clear(GL.COLOR_BUFFER_BIT);
+            gl.Finish();
         }
     }
 

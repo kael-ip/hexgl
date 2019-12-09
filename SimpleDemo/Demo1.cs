@@ -4,30 +4,30 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace HexTex.OpenGL.SimpleDemo {
+namespace HexTex.OpenGL {
 
     class Demo1 : DemoBase {
+        Renderer renderer;
         uint[] textures;
-        uint _fshader;
-        uint _vshader;
-        uint _program;
-        int _uOrigin;
-        int _uAngles;
-        int _uViewOrigin;
-        int _uViewAngles;
-        int _uPerspective;
-        int _uLightVec;
-        int _aPoint;
-        int _aLightNormal;
-        int _aTexCoord;
-        int _uAmbientLight;
-        int _uShadeLight;
-        int _tTexture;
+        Program program;
+        UniformFloat _uOrigin;
+        UniformMatrix _uAngles;
+        UniformFloat _uViewOrigin;
+        UniformMatrix _uViewAngles;
+        UniformMatrix _uPerspective;
+        UniformFloat _uLightVec;
+        AttributeFloat _aPoint;
+        AttributeFloat _aLightNormal;
+        AttributeFloat _aTexCoord;
+        UniformFloat _uAmbientLight;
+        UniformFloat _uShadeLight;
+        Sampler _tTexture;
         static float iq2 = (float)(1 / Math.Sqrt(2));
         static float iq3 = (float)(1 / Math.Sqrt(3));
         SimpleCube2 cube;
         float[] matProjection;
         public override void Prepare(IGL gl) {
+            renderer = new Renderer(gl);
             BuildShaders(gl);
             LoadTextures(gl);
             cube = new SimpleCube2(100, false, true, true);
@@ -67,36 +67,27 @@ void main(void)
 	gl_FragColor = vec4(texture.rgb * mix(1.0, vLightDot * uShadeLight + uAmbientLight, texture.a), 1.0);
 }
 ";
-            _vshader = gl.CreateShader(GL.VERTEX_SHADER);
-            LoadShader(gl, _vshader, vshaderSource);
-            _fshader = gl.CreateShader(GL.FRAGMENT_SHADER);
-            LoadShader(gl, _fshader, fshaderSource);
-            _program = gl.CreateProgram();
-            gl.AttachShader(_program, _vshader);
-            gl.AttachShader(_program, _fshader);
-            gl.LinkProgram(_program);
-            //
-            _uOrigin = gl.GetUniformLocation(_program, "uOrigin");
-            _uAngles = gl.GetUniformLocation(_program, "uAngles");
-            _uViewOrigin = gl.GetUniformLocation(_program, "uViewOrigin");
-            _uViewAngles = gl.GetUniformLocation(_program, "uViewAngles");
-            _uPerspective = gl.GetUniformLocation(_program, "uPerspective");
-            _uLightVec = gl.GetUniformLocation(_program, "uLightVec");
-            _uAmbientLight = gl.GetUniformLocation(_program, "uAmbientLight");
-            _uShadeLight = gl.GetUniformLocation(_program, "uShadeLight");
-            _tTexture = gl.GetUniformLocation(_program, "tTexture");
-            _aPoint = gl.GetAttribLocation(_program, "aPoint");
-            _aLightNormal = gl.GetAttribLocation(_program, "aLightNormal");
-            _aTexCoord = gl.GetAttribLocation(_program, "aTexCoord");
-        }
-        private void LoadShader(IGL gl, uint name, string source) {
-            IntPtr ptr = Marshal.StringToHGlobalAnsi(source);
-            IntPtr ptr2 = Marshal.AllocHGlobal(IntPtr.Size);
-            Marshal.WriteIntPtr(ptr2, ptr);
-            gl.ShaderSource(name, 1, ptr2, IntPtr.Zero);
-            gl.CompileShader(name);
-            Marshal.FreeHGlobal(ptr2);
-            Marshal.FreeHGlobal(ptr);
+            var vsh = new VertexShader() { Source = vshaderSource };
+            renderer.Shaders.Add(vsh);
+            var fsh = new FragmentShader() { Source = fshaderSource };
+            renderer.Shaders.Add(fsh);
+            program = new HexTex.OpenGL.Program();
+            renderer.Programs.Add(program);
+            program.VertexShader = vsh;
+            program.FragmentShader = fsh;
+            program.Uniforms.Add(_uOrigin = new UniformFloat("uOrigin", 3));
+            program.Uniforms.Add(_uAngles = new UniformMatrix("uAngles", 3));
+            program.Uniforms.Add(_uViewOrigin = new UniformFloat("uViewOrigin", 3));
+            program.Uniforms.Add(_uViewAngles = new UniformMatrix("uViewAngles", 3));
+            program.Uniforms.Add(_uPerspective = new UniformMatrix("uPerspective", 4));
+            program.Uniforms.Add(_uLightVec = new UniformFloat("uLightVec", 3));
+            program.Uniforms.Add(_uAmbientLight = new UniformFloat("uAmbientLight", 1));
+            program.Uniforms.Add(_uShadeLight = new UniformFloat("uShadeLight", 1));
+            program.Uniforms.Add(_tTexture = new Sampler("tTexture"));
+            program.Attributes.Add(_aPoint = new AttributeFloat("aPoint", 3));
+            program.Attributes.Add(_aLightNormal = new AttributeFloat("aLightNormal", 3));
+            program.Attributes.Add(_aTexCoord = new AttributeFloat("aTexCoord", 2));
+            renderer.BuildAll();
         }
         private void LoadTextures(IGL gl) {
             int pw = 4, ph = 4;
@@ -114,7 +105,6 @@ void main(void)
                 gl.TexImage2D(GL.TEXTURE_2D, 0, GL.RGBA, 1 << pw, 1 << ph, 0, GL.RGBA, GL.UNSIGNED_BYTE, data);
             });
             gl.GenerateMipmap(GL.TEXTURE_2D);
-
         }
         public override void Redraw(IGL gl) {
             gl.ClearColor(0, 0, 0, 0);
@@ -126,48 +116,34 @@ void main(void)
             gl.CullFace(GL.BACK);
             gl.Enable(GL.DEPTH_TEST);
             gl.DepthFunc(GL.LESS);
-            //
-            gl.UseProgram(_program);
 
-            Helper.WithPinned(matProjection, ptr => {
-                gl.UniformMatrix4fv((uint)_uPerspective, 1, false, ptr);
-            });
-
-            gl.Uniform1i((uint)_tTexture, 0);
-            gl.Uniform1f((uint)_uAmbientLight, 0.5f);
-            gl.Uniform1f((uint)_uShadeLight, 0.5f);
-            gl.Uniform3f((uint)_uLightVec, iq3, -iq3, iq3);
-
-            gl.Uniform3f((uint)_uViewOrigin, 0, 0, 500f);
-
+            _uPerspective.Set(matProjection);
+            _tTexture.Set(0);
+            _uAmbientLight.Set(0.5f);
+            _uShadeLight.Set(0.5f);
+            _uLightVec.Set(iq3, -iq3, iq3);
+            _uViewOrigin.Set(0, 0, 500f);
             float[] angles = new float[] { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
-            Helper.WithPinned(angles, ptr => {
-                gl.UniformMatrix3fv((uint)_uViewAngles, 1, false, ptr);
-            });
+            _uViewAngles.Set(angles);
 
             var hVertex = cube.VertexArray.PinData();
             var hTexCoord = cube.TexCoordArray.PinData();
             var hNormal = cube.NormalArray.PinData();
 
-            gl.VertexAttribPointer((uint)_aPoint, cube.VertexArray.Width, GL.FLOAT, false, 0, hVertex.AddrOfPinnedObject());
-            gl.EnableVertexAttribArray((uint)_aPoint);
-            gl.VertexAttribPointer((uint)_aTexCoord, cube.TexCoordArray.Width, GL.FLOAT, false, 0, hTexCoord.AddrOfPinnedObject());
-            gl.EnableVertexAttribArray((uint)_aTexCoord);
-            gl.VertexAttribPointer((uint)_aLightNormal, cube.NormalArray.Width, GL.FLOAT, false, 0, hNormal.AddrOfPinnedObject());
-            gl.EnableVertexAttribArray((uint)_aLightNormal);
+            _aPoint.Set(hVertex.AddrOfPinnedObject(), cube.VertexArray.Width);
+            _aTexCoord.Set(hTexCoord.AddrOfPinnedObject(), cube.TexCoordArray.Width);
+            _aLightNormal.Set(hNormal.AddrOfPinnedObject(), cube.NormalArray.Width);
 
             var dt = DateTime.Now;
-            double tRotation = Math.PI*2*((0.001 * dt.Millisecond) + dt.Second) / 60;
+            double tRotation = Math.PI * 2 * ((0.001 * dt.Millisecond) + dt.Second) / 60;
             GLMath.Rotate3(angles, tRotation, 0, iq2, iq2);
-            Helper.WithPinned(angles, ptr => {
-                gl.UniformMatrix3fv((uint)_uAngles, 1, false, ptr);
-            });
+            _uAngles.Set(angles);
 
             for (int i = 0; i < 5; i++) {
                 for (int j = 0; j < 5; j++) {
                     for (int k = 0; k < 250; k++) {
-                        gl.Uniform3f((uint)_uOrigin, 200 * i - 500, 200 * j - 500, -200 * k);
-                        gl.DrawArrays(GL.TRIANGLES, 0, cube.Count);
+                        _uOrigin.Set(200 * i - 500, 200 * j - 500, -200 * k);
+                        renderer.DrawTriangles(program, 0, cube.Count);
                     }
                 }
             }
@@ -181,5 +157,4 @@ void main(void)
         }
 
     }
-
 }
