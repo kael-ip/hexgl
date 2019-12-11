@@ -45,6 +45,7 @@ namespace HexTex.OpenGL {
         private List<Program> programs = new List<Program>();
         private Dictionary<Shader, GLShader> glShaders = new Dictionary<Shader, GLShader>();
         private Dictionary<Program, GLProgram> glPrograms = new Dictionary<Program, GLProgram>();
+        public bool ThrowOnMissingVariable = false;
         public Renderer(IGL gl) {
             this.gl = gl;
         }
@@ -123,17 +124,23 @@ namespace HexTex.OpenGL {
                 gl.LinkProgram(obj.id);
                 foreach(var uniform in program.Uniforms) {
                     int location = gl.GetUniformLocation(obj.id, uniform.Name);
-                    if(location < 0)
-                        throw new GLException("Invalid uniform name");
-                    GLUniform glUniform = new GLUniform((uint)location);
-                    obj.uniforms.Add(uniform, glUniform);
+                    if(location < 0) {
+                        if(ThrowOnMissingVariable)
+                            throw new GLException("Invalid uniform name");
+                    } else {
+                        GLUniform glUniform = new GLUniform((uint)location);
+                        obj.uniforms.Add(uniform, glUniform);
+                    }
                 }
                 foreach(var attribute in program.Attributes) {
                     int location = gl.GetAttribLocation(obj.id, attribute.Name);
-                    if(location < 0)
-                        throw new GLException("Invalid attribute name");
-                    GLAttribute glAttribute = new GLAttribute((uint)location);
-                    obj.attributes.Add(attribute, glAttribute);
+                    if(location < 0) {
+                        if(ThrowOnMissingVariable)
+                            throw new GLException("Invalid attribute name");
+                    } else {
+                        GLAttribute glAttribute = new GLAttribute((uint)location);
+                        obj.attributes.Add(attribute, glAttribute);
+                    }
                 }
                 program.IsDirty = false;
             }
@@ -144,14 +151,18 @@ namespace HexTex.OpenGL {
             gl.UseProgram(obj.id);
             foreach(var uniform in program.Uniforms) {
                 if(uniform.IsDirty) {
-                    GLUniform glUniform = obj.uniforms[uniform];
-                    uniform.Setup(gl, glUniform.location);
+                    GLUniform glUniform;
+                    if(obj.uniforms.TryGetValue(uniform, out glUniform)) {
+                        uniform.Setup(gl, glUniform.location);
+                    }
                 }
             }
             foreach(var attribute in program.Attributes) {
                 if(attribute.IsDirty) {
-                    GLAttribute glAttribute = obj.attributes[attribute];
-                    attribute.Setup(gl, glAttribute.location);
+                    GLAttribute glAttribute;
+                    if(obj.attributes.TryGetValue(attribute, out glAttribute)) {
+                        attribute.Setup(gl, glAttribute.location);
+                    }
                 }
             }
         }
@@ -159,6 +170,15 @@ namespace HexTex.OpenGL {
             Setup(program);
             gl.DrawArrays(GL.TRIANGLES, first, count);
         }
+        public void DrawTriangleFans(Program program, int first, int count) {
+            Setup(program);
+            gl.DrawArrays(GL.TRIANGLE_FAN, first, count);
+        }
+        public void DrawTriangleStrips(Program program, int first, int count) {
+            Setup(program);
+            gl.DrawArrays(GL.TRIANGLE_STRIP, first, count);
+        }
+
         #region IDisposable Members
 
         public void Dispose() {
