@@ -26,12 +26,19 @@ namespace HexTex.OpenGL {
         static float iq3 = (float)(1 / Math.Sqrt(3));
         SimpleCube2 cube;
         float[] matProjection;
+        Size viewportSize;
         public override void Prepare(IGL gl) {
             renderer = new Renderer(gl);
             BuildShaders(gl);
             LoadTextures(gl);
             cube = new SimpleCube2(100, false, true, true);
             matProjection = GLMath.Frustum(-200, 200, 100, -100, 100, 100000);
+        }
+        public override void SetViewportSize(Size size) {
+            base.SetViewportSize(size);
+            this.viewportSize = size;
+            float aspect = (float)size.Width / size.Height;
+            matProjection = GLMath.Frustum(-100 * aspect, 100 * aspect, 100, -100, 100, 100000);
         }
         private void BuildShaders(IGL gl) {
             var vshaderSource = @"
@@ -116,6 +123,8 @@ void main(void)
             gl.CullFace(GL.BACK);
             gl.Enable(GL.DEPTH_TEST);
             gl.DepthFunc(GL.LESS);
+
+            gl.Viewport(0, 0, viewportSize.Width, viewportSize.Height);
 
             _uPerspective.Set(matProjection);
             _tTexture.Set(0);

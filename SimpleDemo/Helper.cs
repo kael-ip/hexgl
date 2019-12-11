@@ -223,6 +223,7 @@ namespace HexTex.OpenGL {
     abstract class DemoBase {
         public abstract void Prepare(IGL gl);
         public abstract void Redraw(IGL gl);
+        public virtual void SetViewportSize(Size size) { }
     }
 
     class EmptyDemo : DemoBase {

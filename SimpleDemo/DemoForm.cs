@@ -11,10 +11,12 @@ namespace HexTex.OpenGL.SimpleDemo {
         DemoBase demo;
         Context glContext;
         Point viewOffset = Point.Empty;
-        public DemoForm(DemoBase demo) {
+        public DemoForm(DemoBase demo, bool fullScreen = false) {
             this.demo = demo;
-            this.FormBorderStyle = FormBorderStyle.None;
-            this.Bounds = Screen.PrimaryScreen.Bounds;
+            if(fullScreen) {
+                this.FormBorderStyle = FormBorderStyle.None;
+                this.Bounds = Screen.PrimaryScreen.Bounds;
+            }
             this.TopMost = true;
             this.SetStyle(ControlStyles.UserPaint, true);
             this.SetStyle(ControlStyles.AllPaintingInWmPaint, true);
@@ -24,6 +26,7 @@ namespace HexTex.OpenGL.SimpleDemo {
         }
         protected override void OnHandleCreated(EventArgs e) {
             base.OnHandleCreated(e);
+            demo.SetViewportSize(this.ClientSize);
             glContext = Context.Create(this.Handle, true);
             glContext.Execute(gl => {
                 Console.WriteLine(string.Join("\n", GetInfo(gl)));
@@ -72,6 +75,10 @@ namespace HexTex.OpenGL.SimpleDemo {
         public static string GetString(IGL gl, uint name) {
             IntPtr ptr = gl.GetString(name);
             return System.Runtime.InteropServices.Marshal.PtrToStringAnsi(ptr);
+        }
+        protected override void OnSizeChanged(EventArgs e) {
+            base.OnSizeChanged(e);
+            demo.SetViewportSize(this.ClientSize);
         }
     }
 }
