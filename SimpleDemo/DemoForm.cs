@@ -10,7 +10,6 @@ namespace HexTex.OpenGL.SimpleDemo {
     class DemoForm : Form {
         DemoBase demo;
         Context glContext;
-        Point viewOffset = Point.Empty;
         public DemoForm(DemoBase demo, bool fullScreen = false) {
             this.demo = demo;
             if(fullScreen) {
@@ -22,7 +21,6 @@ namespace HexTex.OpenGL.SimpleDemo {
             this.SetStyle(ControlStyles.AllPaintingInWmPaint, true);
             //this.SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
             //this.DoubleBuffered = true;
-            this.MouseMove += new MouseEventHandler(DemoForm_MouseMove);
         }
         protected override void OnHandleCreated(EventArgs e) {
             base.OnHandleCreated(e);
@@ -65,12 +63,9 @@ namespace HexTex.OpenGL.SimpleDemo {
                 GetString(gl, GL.EXTENSIONS)
             };
         }
-        void DemoForm_MouseMove(object sender, MouseEventArgs e) {
-            var p = this.Bounds.Location;
-            p.Offset(-this.Bounds.Width / 2, -this.Bounds.Height / 2);
-            p.Offset(e.Location);
-            viewOffset = p;
-            this.Invalidate();
+        protected override void OnMouseMove(MouseEventArgs e) {
+            base.OnMouseMove(e);
+            demo.OnMouseMove(e.Location, (e.Button & System.Windows.Forms.MouseButtons.Left) != 0, (e.Button & System.Windows.Forms.MouseButtons.Right) != 0);
         }
         public static string GetString(IGL gl, uint name) {
             IntPtr ptr = gl.GetString(name);

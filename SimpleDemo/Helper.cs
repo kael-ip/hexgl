@@ -224,6 +224,7 @@ namespace HexTex.OpenGL {
         public abstract void Prepare(IGL gl);
         public abstract void Redraw(IGL gl);
         public virtual void SetViewportSize(Size size) { }
+        public virtual void OnMouseMove(Point point, bool leftButtonPressed, bool rightButtonPressed) { }
     }
 
     class EmptyDemo : DemoBase {

@@ -25,20 +25,30 @@ namespace HexTex.OpenGL {
         static float iq2 = (float)(1 / Math.Sqrt(2));
         static float iq3 = (float)(1 / Math.Sqrt(3));
         SimpleCube2 cube;
+        float aspect;
+        float vpheight = 100;
         float[] matProjection;
         Size viewportSize;
+        Point mousePosition;
         public override void Prepare(IGL gl) {
             renderer = new Renderer(gl);
             BuildShaders(gl);
             LoadTextures(gl);
             cube = new SimpleCube2(100, false, true, true);
-            matProjection = GLMath.Frustum(-200, 200, 100, -100, 100, 100000);
+            SetProjection();
         }
         public override void SetViewportSize(Size size) {
             base.SetViewportSize(size);
             this.viewportSize = size;
-            float aspect = (float)size.Width / size.Height;
-            matProjection = GLMath.Frustum(-100 * aspect, 100 * aspect, 100, -100, 100, 100000);
+            aspect = (float)size.Width / size.Height;
+            SetProjection();
+        }
+        private void SetProjection() {
+            matProjection = GLMath.Frustum(-vpheight * aspect, vpheight * aspect, vpheight, -vpheight, 100, 100000);
+        }
+        public override void OnMouseMove(Point point, bool leftButtonPressed, bool rightButtonPressed) {
+            base.OnMouseMove(point, leftButtonPressed, rightButtonPressed);
+            mousePosition = point;
         }
         private void BuildShaders(IGL gl) {
             var vshaderSource = @"
@@ -131,7 +141,8 @@ void main(void)
             _uAmbientLight.Set(0.5f);
             _uShadeLight.Set(0.5f);
             _uLightVec.Set(iq3, -iq3, iq3);
-            _uViewOrigin.Set(0, 0, 500f);
+            //_uViewOrigin.Set(0, 0, 500f);
+            _uViewOrigin.Set((viewportSize.Width / 2 - mousePosition.X), (viewportSize.Height / 2 - mousePosition.Y), 500f);
             float[] angles = new float[] { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
             _uViewAngles.Set(angles);
 
