@@ -27,7 +27,7 @@ namespace HexTex.OpenGL.SimpleDemo {
             demo.SetViewportSize(this.ClientSize);
             glContext = Context.Create(this.Handle, true);
             glContext.Execute(gl => {
-                Console.WriteLine(string.Join("\n", GetInfo(gl)));
+                Trace.TraceInformation(string.Join("\n", GetInfo(gl)));
                 demo.Prepare(gl);
             });
         }
@@ -41,17 +41,19 @@ namespace HexTex.OpenGL.SimpleDemo {
         }
         protected override void OnPaint(PaintEventArgs e) {
             //base.OnPaint(e);
-            if (glContext == null) return;
+            if(glContext == null)
+                return;
             var sw = Stopwatch.StartNew();
             glContext.Execute(gl => {
                 demo.Redraw(gl);
             });
             sw.Stop();
-            Console.WriteLine("GL redraw: {0} ms", sw.ElapsedMilliseconds);
             glContext.SwapBuffers();
+            var text1 = string.Format("GL redraw: {0} ms", sw.ElapsedMilliseconds);
+            this.Text = text1;
             this.Invalidate();
             System.Threading.Thread.Sleep(0);
-            if (Control.MouseButtons == MouseButtons.Right) {
+            if(Control.MouseButtons == MouseButtons.Right) {
                 this.BeginInvoke(new MethodInvoker(delegate { this.Close(); }));
             }
         }
