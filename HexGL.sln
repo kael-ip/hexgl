@@ -5,6 +5,10 @@ VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HexGL", "HexGL\HexGL.csproj", "{AAD00D23-0D61-4CED-90FD-E16A7AC59E26}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Recuberation", "Recuberation\Recuberation.csproj", "{4C541FEE-AC0A-4DF4-A3DA-77F3D9CE48F6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecuberationDemo", "RecuberationDemo\RecuberationDemo.csproj", "{B4B7F555-6DA0-48A7-896C-4DA137476167}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{AAD00D23-0D61-4CED-90FD-E16A7AC59E26}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AAD00D23-0D61-4CED-90FD-E16A7AC59E26}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AAD00D23-0D61-4CED-90FD-E16A7AC59E26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C541FEE-AC0A-4DF4-A3DA-77F3D9CE48F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C541FEE-AC0A-4DF4-A3DA-77F3D9CE48F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C541FEE-AC0A-4DF4-A3DA-77F3D9CE48F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C541FEE-AC0A-4DF4-A3DA-77F3D9CE48F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4B7F555-6DA0-48A7-896C-4DA137476167}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4B7F555-6DA0-48A7-896C-4DA137476167}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4B7F555-6DA0-48A7-896C-4DA137476167}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4B7F555-6DA0-48A7-896C-4DA137476167}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
