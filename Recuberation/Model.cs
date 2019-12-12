@@ -69,50 +69,29 @@ namespace HexTex.Recuberation {
         }
         public static bool ccwFront = false;
         public int FillQuadVerts(float[] vbuffer, float[] nbuffer, int offset) { // fill vertex buffer with 4 verts (12 floats)
-            Action<int, int, int> put = (x, y, z) => {
-                vbuffer[offset + 0] = x;
-                vbuffer[offset + 1] = y;
-                vbuffer[offset + 2] = z;
+            int a = (int)NormalAxis;
+            Action<int, int, int> puta = (x, y, z) => {
+                vbuffer[offset + (0 + a) % 3] = x;
+                vbuffer[offset + (1 + a) % 3] = y;
+                vbuffer[offset + (2 + a) % 3] = z;
                 float av = NormalIsNegative ? -1.0f : 1.0f;
-                nbuffer[offset + 0] = (NormalAxis == Axis.X) ? av : 0;
-                nbuffer[offset + 1] = (NormalAxis == Axis.Y) ? av : 0;
-                nbuffer[offset + 2] = (NormalAxis == Axis.Z) ? av : 0;
+                nbuffer[offset + 0] = (a == 0) ? av : 0;
+                nbuffer[offset + 1] = (a == 1) ? av : 0;
+                nbuffer[offset + 2] = (a == 2) ? av : 0;
                 offset += 3;
             };
             var ccw = ccwFront ? NormalIsNegative : !NormalIsNegative;
-            if(NormalAxis == Axis.Z) {
-                put(LocationOnPlane.X, LocationOnPlane.Y, PlaneValue);
-                if(ccw) {
-                    put(LocationOnPlane.X + 1, LocationOnPlane.Y, PlaneValue);
-                    put(LocationOnPlane.X + 1, LocationOnPlane.Y + 1, PlaneValue);
-                    put(LocationOnPlane.X, LocationOnPlane.Y + 1, PlaneValue);
-                } else {
-                    put(LocationOnPlane.X, LocationOnPlane.Y + 1, PlaneValue);
-                    put(LocationOnPlane.X + 1, LocationOnPlane.Y + 1, PlaneValue);
-                    put(LocationOnPlane.X + 1, LocationOnPlane.Y, PlaneValue);
-                }
-            } else if(NormalAxis == Axis.Y) {
-                put(LocationOnPlane.Y, PlaneValue, LocationOnPlane.X);
-                if(ccw) {
-                    put(LocationOnPlane.Y, PlaneValue, LocationOnPlane.X + 1);
-                    put(LocationOnPlane.Y + 1, PlaneValue, LocationOnPlane.X + 1);
-                    put(LocationOnPlane.Y + 1, PlaneValue, LocationOnPlane.X);
-                } else {
-                    put(LocationOnPlane.Y + 1, PlaneValue, LocationOnPlane.X);
-                    put(LocationOnPlane.Y + 1, PlaneValue, LocationOnPlane.X + 1);
-                    put(LocationOnPlane.Y, PlaneValue, LocationOnPlane.X + 1);
-                }
+            puta(PlaneValue, LocationOnPlane.X, LocationOnPlane.Y);
+            if(ccw) {
+                puta(PlaneValue, LocationOnPlane.X + 1, LocationOnPlane.Y);
             } else {
-                put(PlaneValue, LocationOnPlane.X, LocationOnPlane.Y);
-                if(ccw) {
-                    put(PlaneValue, LocationOnPlane.X + 1, LocationOnPlane.Y);
-                    put(PlaneValue, LocationOnPlane.X + 1, LocationOnPlane.Y + 1);
-                    put(PlaneValue, LocationOnPlane.X, LocationOnPlane.Y + 1);
-                } else {
-                    put(PlaneValue, LocationOnPlane.X, LocationOnPlane.Y + 1);
-                    put(PlaneValue, LocationOnPlane.X + 1, LocationOnPlane.Y + 1);
-                    put(PlaneValue, LocationOnPlane.X + 1, LocationOnPlane.Y);
-                }
+                puta(PlaneValue, LocationOnPlane.X, LocationOnPlane.Y + 1);
+            }
+            puta(PlaneValue, LocationOnPlane.X + 1, LocationOnPlane.Y + 1);
+            if(ccw) {
+                puta(PlaneValue, LocationOnPlane.X, LocationOnPlane.Y + 1);
+            } else {
+                puta(PlaneValue, LocationOnPlane.X + 1, LocationOnPlane.Y);
             }
             return offset;
         }
