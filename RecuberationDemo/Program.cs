@@ -13,7 +13,8 @@ namespace HexTex.Recuberation {
         static void Main() {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new DemoForm(new HexTex.Recuberation.DemoTest1()));
+            //Application.Run(new DemoForm(new HexTex.Recuberation.DemoTest1()));
+            Application.Run(new DemoForm(new HexTex.Recuberation.Demo1()));
         }
     }
 }
