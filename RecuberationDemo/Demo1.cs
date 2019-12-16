@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -48,6 +49,12 @@ namespace HexTex.Recuberation {
             quadMap = new QuadMap();
             quadMap.Build(volume);
             var quads = quadMap.GetAllQuads();
+            Trace.TraceInformation("Quads count = {0}", quads.Count);
+            try {
+                Trace.TraceInformation("Quad groups = {0}", quadMap.CheckConnectivity());
+            } catch(Exception ex) {
+                Trace.TraceError(ex.Message);
+            }
             vbuffer = new float[quads.Count * 4 * 3];
             nbuffer = new float[quads.Count * 4 * 3];
             int i = 0;

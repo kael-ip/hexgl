@@ -59,11 +59,20 @@ namespace HexTex.Recuberation {
         public int Color { get; set; }
         public bool IsOccupied { get; set; }
         public object Tag { get; set; }
-        private Edge[] edges = new Edge[4];
-        public Edge GetEdge(Axis axis, bool sign) {
+        private Edge[] edges = new Edge[6]; // TODO: 4 is enough!
+        public Edge GetEdge(Axis axis, bool neg) {
             if(axis == NormalAxis)
                 return null;
-            throw new NotImplementedException();
+            var index = (int)axis + (neg ? 3 : 0);
+            return edges[index];
+        }
+        public void SetEdge(Axis axis, bool neg, Edge edge) {
+            //if(axis == NormalAxis)
+            //    throw new NotSupportedException();
+            var index = (int)axis + (neg ? 3 : 0);
+            if(edges[index] != null)
+                throw new Exception("Edge already set");
+            edges[index] = edge;
         }
         public VectorI3D Location {
             get {
@@ -166,6 +175,38 @@ namespace HexTex.Recuberation {
             return quad;
         }
         private void BuildEdges(IBinaryVolume volume) {
+        }
+
+        public int CheckConnectivity() {
+            var groups = new int[quads.Count];
+            int currentGroup = 0;
+            for(int i = 0; i < quads.Count; i++) {
+                if(groups[i] == 0) {
+                    currentGroup++;
+                    Collect(quads[i], groups, currentGroup);
+                }
+            }
+            return currentGroup;
+        }
+        private void Collect(Quad quad, int[] groups, int currentGroup) {
+            var i = quads.IndexOf(quad);
+            if(groups[i] == currentGroup)
+                return;
+            if(groups[i] != 0)
+                throw new Exception("Ambiguous quad0 group");
+            groups[i] = currentGroup;
+            Collect(quad.GetEdge(Axis.X, false), quad, groups, currentGroup);
+            Collect(quad.GetEdge(Axis.X, true), quad, groups, currentGroup);
+            Collect(quad.GetEdge(Axis.Y, false), quad, groups, currentGroup);
+            Collect(quad.GetEdge(Axis.Y, true), quad, groups, currentGroup);
+            Collect(quad.GetEdge(Axis.Z, false), quad, groups, currentGroup);
+            Collect(quad.GetEdge(Axis.Z, true), quad, groups, currentGroup);
+        }
+        private void Collect(Edge edge, Quad quad, int[] groups, int currentGroup) {
+            if(edge == null)
+                return;
+            Quad q = edge.Q0 == quad ? edge.Q1 : edge.Q0;
+            Collect(q, groups, currentGroup);
         }
     }
 }
