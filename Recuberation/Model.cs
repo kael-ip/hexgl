@@ -65,6 +65,19 @@ namespace HexTex.Recuberation {
                 return null;
             throw new NotImplementedException();
         }
+        public VectorI3D Location {
+            get {
+                switch(NormalAxis) {
+                    case Axis.X:
+                        return new VectorI3D(PlaneValue, LocationOnPlane.X, LocationOnPlane.Y);
+                    case Axis.Y:
+                        return new VectorI3D(LocationOnPlane.Y, PlaneValue, LocationOnPlane.X);
+                    case Axis.Z:
+                        return new VectorI3D(LocationOnPlane.X, LocationOnPlane.Y, PlaneValue);
+                }
+                return default(VectorI3D);
+            }
+        }
         public Quad() {
         }
         public static bool ccwFront = false;
@@ -102,11 +115,9 @@ namespace HexTex.Recuberation {
 
     public class Edge {
         public Axis Axis { get; set; }
-        public Quad P { get; set; }
-        public Quad Q { get; set; }
-        public int Angle { get; set; }
-        public int PValue { get; set; }
-        public int QValue { get; set; }
+        public int Angle { get; set; } //unsigned (when axis points outside, CW is positive for Q0->Q1)
+        public Quad Q0 { get; set; }
+        public Quad Q1 { get; set; }
     }
 
     public class QuadMap {
@@ -129,28 +140,30 @@ namespace HexTex.Recuberation {
                         bool v = volume.IsOccupied(x, y, z);
                         bool e = volume.IsOccupied(x, y, z - 1);
                         if(v && !e) {
-                            AddQuad(new Quad() { NormalAxis = Axis.Z, NormalIsNegative = true, PlaneValue = z, LocationOnPlane = new VectorI2D(x, y) });
+                            AddQuad(Axis.Z, true, z, x, y);
                         } else if(!v && e) {
-                            AddQuad(new Quad() { NormalAxis = Axis.Z, NormalIsNegative = false, PlaneValue = z, LocationOnPlane = new VectorI2D(x, y) });
+                            AddQuad(Axis.Z, false, z, x, y);
                         }
                         e = volume.IsOccupied(x, y - 1, z);
                         if(v && !e) {
-                            AddQuad(new Quad() { NormalAxis = Axis.Y, NormalIsNegative = true, PlaneValue = y, LocationOnPlane = new VectorI2D(z, x) });
+                            AddQuad(Axis.Y, true, y, z, x);
                         } else if(!v && e) {
-                            AddQuad(new Quad() { NormalAxis = Axis.Y, NormalIsNegative = false, PlaneValue = y, LocationOnPlane = new VectorI2D(z, x) });
+                            AddQuad(Axis.Y, false, y, z, x);
                         }
                         e = volume.IsOccupied(x - 1, y, z);
                         if(v && !e) {
-                            AddQuad(new Quad() { NormalAxis = Axis.X, NormalIsNegative = true, PlaneValue = x, LocationOnPlane = new VectorI2D(y, z) });
+                            AddQuad(Axis.X, true, x, y, z);
                         } else if(!v && e) {
-                            AddQuad(new Quad() { NormalAxis = Axis.X, NormalIsNegative = false, PlaneValue = x, LocationOnPlane = new VectorI2D(y, z) });
+                            AddQuad(Axis.X, false, x, y, z);
                         }
                     }
                 }
             }
         }
-        private void AddQuad(Quad quad) {
+        private Quad AddQuad(Axis normalAxis, bool normalIsNegative, int planeValue, int x, int y) {
+            var quad = new Quad() { NormalAxis = normalAxis, NormalIsNegative = normalIsNegative, PlaneValue = planeValue, LocationOnPlane = new VectorI2D(x, y) };
             quads.Add(quad);
+            return quad;
         }
         private void BuildEdges(IBinaryVolume volume) {
         }
