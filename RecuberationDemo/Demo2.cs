@@ -29,7 +29,9 @@ namespace HexTex.Recuberation {
         static float iq2 = (float)(1 / Math.Sqrt(2));
         static float iq3 = (float)(1 / Math.Sqrt(3));
 
-        float vpheight = 2.0f;
+        float hheight = 2.0f;
+        float clipNear = 3.0f;
+        float clipFar = 1000f;
         float aspect = 2.0f;
         float[] matProjection;
         Size viewportSize;
@@ -37,13 +39,15 @@ namespace HexTex.Recuberation {
 
         Mesh earth;
         Mesh cube;
-        System.Numerics.Matrix4x4 cmat = System.Numerics.Matrix4x4.Identity;
-        float tween = 0, twoff = 0;
+        QuadMap map;
+        RollingController controller;
 
         public Demo2() {
             Quad.ccwFront = false;
             earth = CreateEarth();
             cube = CreateCube();
+            controller = new RollingController(map);
+            controller.Period = 256;
         }
         private Mesh CreateCube() {
             IBinaryVolume volume = new SphereVolume(0, 0, 0, 1);
@@ -74,6 +78,7 @@ namespace HexTex.Recuberation {
             } catch(Exception ex) {
                 Trace.TraceError(ex.Message);
             }
+            this.map = quadMap;
             Mesh mesh = new Mesh(4, quads.Count, true, false);
             int i = 0;
             foreach(var quad in quads) {
@@ -95,7 +100,7 @@ namespace HexTex.Recuberation {
         }
 
         private void SetProjection() {
-            matProjection = GLMath.Frustum(-vpheight * aspect, vpheight * aspect, -vpheight, vpheight, 100, 1000);
+            //matProjection = GLMath.Frustum(-hheight * aspect, hheight * aspect, -hheight, hheight, clipNear, clipFar);
         }
         public override void OnMouseMove(Point point, bool leftButtonPressed, bool rightButtonPressed) {
             base.OnMouseMove(point, leftButtonPressed, rightButtonPressed);
@@ -177,7 +182,7 @@ void main(void)
 
             gl.Viewport(0, 0, viewportSize.Width, viewportSize.Height);
 
-            _uPerspective.Set(matProjection);
+            //_uPerspective.Set(matProjection);
             _tTexture.Set(0);
             _uAmbientLight.Set(0.2f);
             _uShadeLight.Set(0.5f);
@@ -194,10 +199,11 @@ void main(void)
             double tRotation = Math.PI * 2 * ((0.001 * dt.Millisecond) + dt.Second) / 60;
             {
                 System.Numerics.Matrix4x4 vmat = System.Numerics.Matrix4x4.Identity;
+                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(-5, -5, 0));
                 vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationZ((float)tRotation));
-                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationX((float)(-Math.PI / 2 * 0.9)));
-                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(0, 0, -500f));
-                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreatePerspectiveOffCenter(-vpheight * aspect, vpheight * aspect, -vpheight, vpheight, 100, 1000));
+                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationX((float)(-Math.PI / 2 * 0.66)));
+                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(0, 0, -10f));
+                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreatePerspectiveOffCenter(-hheight * aspect, hheight * aspect, -hheight, hheight, clipNear, clipFar));
                 _uPerspective.Set(vmat.ToArray());
             }
 
@@ -205,24 +211,10 @@ void main(void)
             _uOrigin.Set(0, 0, 0);
             //_uObject.Set(System.Numerics.Matrix4x4.Identity.ToArray());
             DrawMesh(earth);
-            
-            {
-                System.Numerics.Matrix4x4 mat = cmat;
-                mat = System.Numerics.Matrix4x4.Multiply(mat, System.Numerics.Matrix4x4.CreateRotationY((float)(tween * Math.PI / 2), new System.Numerics.Vector3(1, 0, 0)));
-                mat = System.Numerics.Matrix4x4.Multiply(mat, System.Numerics.Matrix4x4.CreateTranslation(twoff, 0, 0));
-                //_uObject.Set(mat.ToArray());
-                _uOrigin.Set(mat.M41, mat.M42, mat.M43);
-                _uAngles.Set(mat.GetRotationMatrixAsArray());
-                tween += 1f / 256;
-                if(tween >= 1) {
-                    tween -= 1;
-                    twoff += 1f;
-                    if(twoff >= 10) {
-                        twoff -= 10;
-                    }
-                }
-            }
+
+            controller.Setup(_uOrigin, _uAngles);
             DrawMesh(cube);
+            controller.Advance();
 
             gl.Flush();
             gl.Finish();
@@ -244,6 +236,98 @@ void main(void)
                 hVertex.Free();
             if(hNormal.IsAllocated)
                 hNormal.Free();
+        }
+    }
+
+    class RollingController {
+        private QuadMap map;
+        private Quad quad, next;
+        private Axis dirAxis;
+        private bool dirIsNegative;
+        private Edge edge;
+        private bool rIsNegative;
+        private System.Numerics.Matrix4x4 omat, mat;
+        private int frame, period, rq;
+        public int Period { get; set; }
+        public RollingController(QuadMap map) {
+            this.map = map;
+            this.omat = this.mat = System.Numerics.Matrix4x4.Identity;
+            this.quad = map.GetAllQuads()[0];
+            this.next = this.quad;
+            this.Period = 256;
+            this.frame = 0;
+            this.period = Period;
+            this.rq = 0;
+            this.dirAxis = Axis.X;
+            this.dirIsNegative = false;
+        }
+        public void Advance() {
+            if(frame >= rq * period) {
+                frame = 0;
+                if(Period <= 0) {
+                    Period = 256;
+                }
+                period = Period;
+                ReAnimate();
+            } else {
+                frame++;
+            }
+            UpdateLocation();
+        }
+        private void UpdateLocation() {
+            System.Numerics.Matrix4x4 rmat = System.Numerics.Matrix4x4.Identity;
+            System.Numerics.Vector3 rvec = System.Numerics.Vector3.Zero;
+            float angle = (float)(frame * Math.PI / 2 / period);
+            if(rIsNegative) {
+                angle = -angle;
+            }
+            if(edge.Axis == Axis.X) {
+                rvec = rIsNegative ? new System.Numerics.Vector3(0, 1, 0) : new System.Numerics.Vector3(0, 0, 0);
+                rmat = System.Numerics.Matrix4x4.CreateRotationX(angle, rvec);
+            } else if(edge.Axis == Axis.Y) {
+                rvec = rIsNegative ? new System.Numerics.Vector3(0, 0, 0) : new System.Numerics.Vector3(1, 0, 0);
+                rmat = System.Numerics.Matrix4x4.CreateRotationY(angle, rvec);
+            } else {
+                rmat = System.Numerics.Matrix4x4.CreateRotationZ(angle, rvec);
+            }
+            mat = System.Numerics.Matrix4x4.Multiply(omat, rmat);
+            mat = System.Numerics.Matrix4x4.Multiply(mat, 
+                System.Numerics.Matrix4x4.CreateTranslation(quad.Location.X, quad.Location.Y, quad.Location.Z));
+        }
+        public void Setup(UniformFloat position, UniformMatrix rotation) {
+            position.Set(mat.M41, mat.M42, mat.M43);
+            rotation.Set(mat.GetRotationMatrixAsArray());
+        }
+        private void ReAnimate() {
+            //TODO: mark quad occupation and check if it is not occupied
+            quad = next;
+            ChooseNext();
+            if(edge.Q0 == quad) {
+                next = edge.Q1;
+                rIsNegative = false;
+            } else {
+                next = edge.Q0;
+                rIsNegative = true;
+            }
+            rq = edge.Angle - 1;
+            //if actual angle == 0, repeat, limit retries
+        }
+        private void ChooseNext() {
+            int attempt = 0;
+            //TODO: be smarter!
+            edge = null;
+            while(edge == null) {
+                if(attempt > 0) {
+                    if(attempt % 2 == 1) {
+                        dirAxis = (Axis)(((int)dirAxis + 1) % 3);
+                    } else {
+                        dirIsNegative = !dirIsNegative;
+                    }
+                }
+                edge = quad.GetEdge(dirAxis, dirIsNegative);
+                attempt++;
+            }
+            System.Diagnostics.Trace.TraceInformation("Direction: {0} neg={1}", dirAxis, dirIsNegative);
         }
     }
 
