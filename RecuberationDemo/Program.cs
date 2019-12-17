@@ -14,7 +14,8 @@ namespace HexTex.Recuberation {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             //Application.Run(new DemoForm(new HexTex.Recuberation.DemoTest1()));
-            Application.Run(new DemoForm(new HexTex.Recuberation.Demo1()));
+            //Application.Run(new DemoForm(new HexTex.Recuberation.Demo1()));
+            Application.Run(new DemoForm(new HexTex.Recuberation.Demo2()));
         }
     }
 }
