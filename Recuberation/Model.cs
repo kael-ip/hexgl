@@ -177,6 +177,32 @@ namespace HexTex.Recuberation {
         private void BuildEdges(IBinaryVolume volume) {
         }
 
+        public void BuildPlane(int xsize, int ysize) {
+            var row = new Quad[xsize];
+            for(int y = 0; y < ysize; y++) {
+                for(int x = 0; x < xsize; x++) {
+                    var quad = AddQuad(Axis.Z, false, 0, x, y);
+                    if(y > 0) {
+                        var prev = row[x];
+                        var edge = new Edge();
+                        edge.Axis = Axis.X;
+                        edge.Angle = 2;
+                        edge.Q0 = quad;
+                        edge.Q1 = prev;
+                    }
+                    if(x > 0) {
+                        var prev = row[x - 1];
+                        var edge = new Edge();
+                        edge.Axis = Axis.Y;
+                        edge.Angle = 2;
+                        edge.Q0 = prev;
+                        edge.Q1 = quad;
+                    }
+                    row[x] = quad;
+                }
+            }
+        }
+
         public int CheckConnectivity() {
             var groups = new int[quads.Count];
             int currentGroup = 0;
