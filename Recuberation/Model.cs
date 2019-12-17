@@ -189,6 +189,8 @@ namespace HexTex.Recuberation {
                         edge.Angle = 2;
                         edge.Q0 = quad;
                         edge.Q1 = prev;
+                        quad.SetEdge(Axis.Y, true, edge);
+                        prev.SetEdge(Axis.Y, false, edge);
                     }
                     if(x > 0) {
                         var prev = row[x - 1];
@@ -197,6 +199,8 @@ namespace HexTex.Recuberation {
                         edge.Angle = 2;
                         edge.Q0 = prev;
                         edge.Q1 = quad;
+                        quad.SetEdge(Axis.X, false, edge);
+                        prev.SetEdge(Axis.X, true, edge);
                     }
                     row[x] = quad;
                 }
