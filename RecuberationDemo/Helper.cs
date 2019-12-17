@@ -48,4 +48,22 @@ namespace HexTex.OpenGL {
         public virtual void OnMouseMove(Point point, bool leftButtonPressed, bool rightButtonPressed) { }
     }
 
+    class Mesh {
+        public float[] VertexBuffer { get; private set; }
+        public float[] NormalBuffer { get; private set; }
+        public float[] TexUVBuffer { get; private set; }
+        public int PrimitiveCount { get; private set; }
+        public int PrimitiveLength { get; private set; }
+        public Mesh(int length, int count, bool useNormal, bool useTexUV) {
+            PrimitiveLength = length;
+            PrimitiveCount = count;
+            VertexBuffer = new float[3 * length * count];
+            if(useNormal) {
+                NormalBuffer = new float[3 * length * count];
+            }
+            if(useTexUV) {
+                TexUVBuffer = new float[2 * length * count];
+            }
+        }
+    }
 }
