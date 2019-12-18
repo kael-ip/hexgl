@@ -49,6 +49,7 @@ namespace HexTex.Recuberation {
             earth = CreateEarth(9);
             cube = CreateCube();
             palette = GeneratePalette(20);
+            palette[0] = new float[] { 1f, 1f, 1f };
         }
         private Mesh CreateCube() {
             IBinaryVolume volume = new SphereVolume(0, 0, 0, 1);
@@ -90,6 +91,7 @@ namespace HexTex.Recuberation {
                 controllers.Add(controller);
             }
             Mesh mesh = new Mesh(4, quads.Count, true, false);
+            mesh.GetColor = index => quads[index].Color;
             int offset = 0;
             foreach(var quad in quads) {
                 offset = quad.FillQuadVerts(mesh.VertexBuffer, mesh.NormalBuffer, offset);
@@ -270,8 +272,12 @@ void main(void)
             _aLightNormal.Set(hNormal.AddrOfPinnedObject(), 3);
 
             for(int i = 0, j = 0; i < mesh.PrimitiveCount; i++, j += mesh.PrimitiveLength) {
+                if(mesh.GetColor != null) {
+                    var c = palette[mesh.GetColor(i) % palette.Length];
+                    _aVertexColor.Set(c[0], c[1], c[2]);
+                }
                 renderer.DrawTriangleFans(program, j, mesh.PrimitiveLength);
-            }           
+            }
 
             if(hVertex.IsAllocated)
                 hVertex.Free();
@@ -377,7 +383,7 @@ void main(void)
                 attempt++;
             }
             next.IsOccupied = true;
-            next.Color = color;
+            quad.Color = color;
             //TODO: occupy quads based on volume cells and consider self-occupation for 0-moves
             System.Diagnostics.Trace.TraceInformation("Direction: {1}{0}", dirAxis, dirIsNegative ? "-" : "+");
             //if actual angle == 0, repeat, limit retries

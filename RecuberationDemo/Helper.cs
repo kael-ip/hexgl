@@ -54,6 +54,7 @@ namespace HexTex.OpenGL {
         public float[] TexUVBuffer { get; private set; }
         public int PrimitiveCount { get; private set; }
         public int PrimitiveLength { get; private set; }
+        public Func<int, int> GetColor { get; set; }
         public Mesh(int length, int count, bool useNormal, bool useTexUV) {
             PrimitiveLength = length;
             PrimitiveCount = count;
