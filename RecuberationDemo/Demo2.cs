@@ -87,7 +87,7 @@ namespace HexTex.Recuberation {
                 while(quad == null || quad.IsOccupied) {
                     quad = quads[rnd.Next(quads.Count)];
                 }
-                controller.Setup(quad, rnd.Next(2) == 0 ? Axis.X : Axis.Y, rnd.Next(2) != 0, 256, i + 1);
+                controller.Setup(quad, rnd.Next(2) == 0 ? Axis.X : Axis.Y, rnd.Next(2) != 0, 128 + (8 << rnd.Next(5)), i + 1);
                 controllers.Add(controller);
             }
             Mesh mesh = new Mesh(4, quads.Count, true, false);
