@@ -41,12 +41,14 @@ namespace HexTex.Recuberation {
         Mesh earth;
         Mesh cube;
         List<RollingController> controllers;
+        float[][] palette;
 
         public Demo2() {
             Quad.ccwFront = false;
             controllers = new List<RollingController>();
-            earth = CreateEarth(5);
+            earth = CreateEarth(9);
             cube = CreateCube();
+            palette = GeneratePalette(20);
         }
         private Mesh CreateCube() {
             IBinaryVolume volume = new SphereVolume(0, 0, 0, 1);
@@ -93,6 +95,26 @@ namespace HexTex.Recuberation {
                 offset = quad.FillQuadVerts(mesh.VertexBuffer, mesh.NormalBuffer, offset);
             }
             return mesh;
+        }
+        private float[][] GeneratePalette(int count, float luma = 0.7f, float z = 0.4f) {
+            var rnd = new Random();
+            var palette = new float[count][];
+            for(var i = 0; i < count; i++) {
+                var rgb = new float[3];
+                var a = rnd.NextDouble() * 3;
+                var ii = Math.Floor(a);
+                var j = (int)ii;
+                var c0 = (1 - z) * luma;
+                var c1 = a - ii;
+                var c2 = 1 - c1;
+                c1 = (c1 * z + 1 - z) * luma;
+                c2 = (c2 * z + 1 - z) * luma;
+                rgb[(j + 0) % 3] = (float)(c0);
+                rgb[(j + 1) % 3] = (float)(c1);
+                rgb[(j + 2) % 3] = (float)(c2);
+                palette[i] = rgb;
+            }
+            return palette;
         }
         public override void Prepare(IGL gl) {
             renderer = new Renderer(gl);
@@ -228,7 +250,9 @@ void main(void)
 
             foreach(var controller in controllers) {
                 controller.ReadLocation(_uOrigin, _uAngles);
-                _aVertexColor.Set(1.0f, 0.4f, 0.4f);
+                //_aVertexColor.Set(1.0f, 0.4f, 0.4f);
+                var c = palette[controller.Color % palette.Length];
+                _aVertexColor.Set(c[0], c[1], c[2]);
                 DrawMesh(cube);
                 controller.Advance();
             }
@@ -266,6 +290,7 @@ void main(void)
         private int frame, period, rq;
         private int color;
         public int Period { get; set; }
+        public int Color { get { return color; } }
         public RollingController() {
             this.omat = this.mat = System.Numerics.Matrix4x4.Identity;
         }
