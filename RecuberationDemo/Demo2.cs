@@ -21,6 +21,7 @@ namespace HexTex.Recuberation {
         AttributeFloat _aPoint;
         AttributeFloat _aLightNormal;
         AttributeFloat _aTexCoord;
+        AttributeFloat _aVertexColor;
         UniformFloat _uAmbientLight;
         UniformFloat _uShadeLight;
         Sampler _tTexture;
@@ -125,8 +126,10 @@ uniform vec3 uLightVec;
 attribute vec3 aPoint;
 attribute vec3 aLightNormal;
 attribute vec2 aTexCoord;
+attribute vec3 aVertexColor;
 varying vec2 vTexCoord;
 varying float vLightDot;
+varying vec3 vVertexColor;
 void main(void)
 {
 	vec3 position = uViewAngles * (uAngles * aPoint.xyz + uOrigin - uViewOrigin);
@@ -135,6 +138,7 @@ void main(void)
     //gl_Position = uPerspective * position4;
 	vTexCoord = aTexCoord;
     vLightDot = dot(uViewAngles * (uAngles * aLightNormal), uLightVec);
+    vVertexColor = aVertexColor;
 }
 ";
             var fshaderSource = @"
@@ -144,10 +148,11 @@ uniform float uShadeLight;
 uniform sampler2D tTexture;
 varying vec2 vTexCoord;
 varying float vLightDot;
+varying vec3 vVertexColor;
 void main(void)
 {
 	//vec4 texture = texture2D(tTexture, vTexCoord);
-    vec4 texture = texture2D(tTexture, vTexCoord)*0.00001 + vec4(1.0, 1.0, 1.0, 1.0);
+    vec4 texture = vec4(vVertexColor.rgb, 1.0);
 	gl_FragColor = vec4(texture.rgb * mix(1.0, vLightDot * uShadeLight + uAmbientLight, texture.a), 1.0);
 }
 ";
@@ -172,6 +177,7 @@ void main(void)
             program.Attributes.Add(_aPoint = new AttributeFloat("aPoint", 3));
             program.Attributes.Add(_aLightNormal = new AttributeFloat("aLightNormal", 3));
             program.Attributes.Add(_aTexCoord = new AttributeFloat("aTexCoord", 2));
+            program.Attributes.Add(_aVertexColor = new AttributeFloat("aVertexColor", 3));
             renderer.BuildAll();
         }
         private void LoadTextures(IGL gl) {
@@ -217,10 +223,12 @@ void main(void)
             //GLMath.Rotate3(angles, tRotation, 0, 0, 1);
             _uOrigin.Set(0, 0, 0);
             //_uObject.Set(System.Numerics.Matrix4x4.Identity.ToArray());
+            _aVertexColor.Set(1.0f, 1.0f, 1.0f);
             DrawMesh(earth);
 
             foreach(var controller in controllers) {
                 controller.ReadLocation(_uOrigin, _uAngles);
+                _aVertexColor.Set(1.0f, 0.4f, 0.4f);
                 DrawMesh(cube);
                 controller.Advance();
             }
