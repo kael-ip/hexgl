@@ -41,6 +41,42 @@ namespace HexTex.OpenGL {
         }
     }
 
+    public static class NumericsHelper {
+        public static float[] ToArray(this System.Numerics.Matrix4x4 m) {
+            var a = new float[16];
+            a[0] = m.M11;
+            a[1] = m.M12;
+            a[2] = m.M13;
+            a[3] = m.M14;
+            a[4] = m.M21;
+            a[5] = m.M22;
+            a[6] = m.M23;
+            a[7] = m.M24;
+            a[8] = m.M31;
+            a[9] = m.M32;
+            a[10] = m.M33;
+            a[11] = m.M34;
+            a[12] = m.M41;
+            a[13] = m.M42;
+            a[14] = m.M43;
+            a[15] = m.M44;
+            return a;
+        }
+        public static float[] GetRotationMatrixAsArray(this System.Numerics.Matrix4x4 m) {
+            var a = new float[9];
+            a[0] = m.M11;
+            a[1] = m.M12;
+            a[2] = m.M13;
+            a[3] = m.M21;
+            a[4] = m.M22;
+            a[5] = m.M23;
+            a[6] = m.M31;
+            a[7] = m.M32;
+            a[8] = m.M33;
+            return a;
+        }
+    }
+
     abstract class DemoBase {
         public abstract void Prepare(IGL gl);
         public abstract void Redraw(IGL gl);

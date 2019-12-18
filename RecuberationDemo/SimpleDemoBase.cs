@@ -1,0 +1,165 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using HexTex.OpenGL;
+
+namespace HexTex.Recuberation {
+
+    abstract class SimpleDemoBase : DemoBase {
+        protected Renderer renderer;
+        protected Program program;
+        protected UniformFloat _uOrigin;
+        protected UniformMatrix _uAngles;
+        protected UniformFloat _uViewOrigin;
+        protected UniformMatrix _uViewAngles;
+        protected UniformMatrix _uPerspective;
+        protected UniformFloat _uLightVec;
+        protected AttributeFloat _aPoint;
+        protected AttributeFloat _aLightNormal;
+        protected AttributeFloat _aTexCoord;
+        protected AttributeFloat _aVertexColor;
+        protected UniformFloat _uAmbientLight;
+        protected UniformFloat _uShadeLight;
+        protected Sampler _tTexture;
+        protected UniformMatrix _uObject;
+
+        protected static float iq2 = (float)(1 / Math.Sqrt(2));
+        protected static float iq3 = (float)(1 / Math.Sqrt(3));
+
+        protected float hheight = 2.0f;
+        protected float clipNear = 3.0f;
+        protected float clipFar = 1000f;
+        protected float aspect = 2.0f;
+        protected float[] matProjection;
+        protected Size viewportSize;
+        protected Point mousePosition;
+
+        protected uint[] textures;
+
+        public SimpleDemoBase() {
+            Quad.ccwFront = false;
+        }
+        public override void Prepare(IGL gl) {
+            renderer = new Renderer(gl);
+            BuildShaders(gl);
+            LoadTextures(gl);
+            SetProjection();
+        }
+        public override void SetViewportSize(Size size) {
+            base.SetViewportSize(size);
+            this.viewportSize = size;
+            aspect = (float)size.Width / size.Height;
+            SetProjection();
+        }
+        protected virtual void SetProjection() {
+            matProjection = GLMath.Frustum(-hheight * aspect, hheight * aspect, -hheight, hheight, clipNear, clipFar);
+        }
+        public override void OnMouseMove(Point point, bool leftButtonPressed, bool rightButtonPressed) {
+            base.OnMouseMove(point, leftButtonPressed, rightButtonPressed);
+            mousePosition = point;
+        }
+        protected virtual void BuildShaders(IGL gl) {
+            var vshaderSource = @"
+uniform mat4 uObject;
+uniform vec3 uOrigin;
+uniform mat3 uAngles;
+uniform vec3 uViewOrigin;
+uniform mat3 uViewAngles;
+uniform mat4 uPerspective;
+uniform vec3 uLightVec;
+attribute vec3 aPoint;
+attribute vec3 aLightNormal;
+attribute vec2 aTexCoord;
+attribute vec3 aVertexColor;
+varying vec2 vTexCoord;
+varying float vLightDot;
+varying vec3 vVertexColor;
+void main(void)
+{
+	vec3 position = uViewAngles * (uAngles * aPoint.xyz + uOrigin - uViewOrigin);
+    gl_Position = uPerspective * vec4(position.xyz, 1.0);
+    //vec4 position4 = uObject * vec4(aPoint.xyz, 1.0);
+    //gl_Position = uPerspective * position4;
+	vTexCoord = aTexCoord;
+    vLightDot = dot(uViewAngles * (uAngles * aLightNormal), uLightVec);
+    vVertexColor = aVertexColor;
+}
+";
+            var fshaderSource = @"
+precision mediump float;
+uniform float uAmbientLight;
+uniform float uShadeLight;
+uniform sampler2D tTexture;
+varying vec2 vTexCoord;
+varying float vLightDot;
+varying vec3 vVertexColor;
+void main(void)
+{
+	//vec4 texture = texture2D(tTexture, vTexCoord);
+    vec4 texture = texture2D(tTexture, vTexCoord) * vec4(vVertexColor.rgb, 1.0);
+	gl_FragColor = vec4(texture.rgb * mix(1.0, vLightDot * uShadeLight + uAmbientLight, texture.a), 1.0);
+}
+";
+            var vsh = new VertexShader() { Source = vshaderSource };
+            renderer.Shaders.Add(vsh);
+            var fsh = new FragmentShader() { Source = fshaderSource };
+            renderer.Shaders.Add(fsh);
+            program = new HexTex.OpenGL.Program();
+            renderer.Programs.Add(program);
+            program.VertexShader = vsh;
+            program.FragmentShader = fsh;
+            program.Uniforms.Add(_uOrigin = new UniformFloat("uOrigin", 3));
+            program.Uniforms.Add(_uAngles = new UniformMatrix("uAngles", 3));
+            program.Uniforms.Add(_uViewOrigin = new UniformFloat("uViewOrigin", 3));
+            program.Uniforms.Add(_uViewAngles = new UniformMatrix("uViewAngles", 3));
+            program.Uniforms.Add(_uPerspective = new UniformMatrix("uPerspective", 4));
+            program.Uniforms.Add(_uLightVec = new UniformFloat("uLightVec", 3));
+            program.Uniforms.Add(_uAmbientLight = new UniformFloat("uAmbientLight", 1));
+            program.Uniforms.Add(_uShadeLight = new UniformFloat("uShadeLight", 1));
+            program.Uniforms.Add(_tTexture = new Sampler("tTexture"));
+            program.Uniforms.Add(_uObject = new UniformMatrix("uObject", 4));
+            program.Attributes.Add(_aPoint = new AttributeFloat("aPoint", 3));
+            program.Attributes.Add(_aLightNormal = new AttributeFloat("aLightNormal", 3));
+            program.Attributes.Add(_aTexCoord = new AttributeFloat("aTexCoord", 2));
+            program.Attributes.Add(_aVertexColor = new AttributeFloat("aVertexColor", 3));
+            renderer.BuildAll();
+
+            _aVertexColor.Set(1f, 1f, 1f);
+        }
+        protected virtual void LoadTextures(IGL gl) {
+            gl.ActiveTexture(GL.TEXTURE0);
+            //gl.BindTexture(GL.TEXTURE_2D, id);
+            gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.NEAREST);
+            gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.NEAREST);
+            gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.REPEAT);
+            gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.REPEAT);
+            uint[] data = new uint[] { 0xffffffff };
+            int pw = 0, ph = 0;
+            Helper.WithPinned(data, ptr => {
+                gl.TexImage2D(GL.TEXTURE_2D, 0, GL.RGBA, 1 << pw, 1 << ph, 0, GL.RGBA, GL.UNSIGNED_BYTE, ptr);
+            });
+        }
+        public override void Redraw(IGL gl) {
+            gl.ClearColor(0, 0, 0, 0);
+            gl.ClearDepthf(float.MaxValue);
+            gl.Clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT | GL.STENCIL_BUFFER_BIT);
+            //
+            gl.Enable(GL.CULL_FACE);
+            gl.FrontFace(GL.CCW);
+            gl.CullFace(GL.BACK);
+            gl.Enable(GL.DEPTH_TEST);
+            gl.DepthFunc(GL.LESS);
+
+            gl.Viewport(0, 0, viewportSize.Width, viewportSize.Height);
+
+            RedrawCore(gl);
+
+            gl.Flush();
+            gl.Finish();
+        }
+        protected abstract void RedrawCore(IGL gl);
+    }
+}
