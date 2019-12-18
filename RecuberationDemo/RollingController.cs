@@ -57,14 +57,16 @@ namespace HexTex.Recuberation {
             if(rIsNegative) {
                 angle = -angle;
             }
-            if(edge.Axis == Axis.X) {
-                rvec = rIsNegative ? new System.Numerics.Vector3(0, 1, 0) : new System.Numerics.Vector3(0, 0, 0);
-                rmat = System.Numerics.Matrix4x4.CreateRotationX(angle, rvec);
-            } else if(edge.Axis == Axis.Y) {
-                rvec = rIsNegative ? new System.Numerics.Vector3(0, 0, 0) : new System.Numerics.Vector3(1, 0, 0);
-                rmat = System.Numerics.Matrix4x4.CreateRotationY(angle, rvec);
-            } else {
-                rmat = System.Numerics.Matrix4x4.CreateRotationZ(angle, rvec);
+            if(edge != null) {
+                if(edge.Axis == Axis.X) {
+                    rvec = rIsNegative ? new System.Numerics.Vector3(0, 1, 0) : new System.Numerics.Vector3(0, 0, 0);
+                    rmat = System.Numerics.Matrix4x4.CreateRotationX(angle, rvec);
+                } else if(edge.Axis == Axis.Y) {
+                    rvec = rIsNegative ? new System.Numerics.Vector3(0, 0, 0) : new System.Numerics.Vector3(1, 0, 0);
+                    rmat = System.Numerics.Matrix4x4.CreateRotationY(angle, rvec);
+                } else {
+                    rmat = System.Numerics.Matrix4x4.CreateRotationZ(angle, rvec);
+                }
             }
             mat = System.Numerics.Matrix4x4.Multiply(omat, rmat);
             mat = System.Numerics.Matrix4x4.Multiply(mat,
@@ -83,6 +85,11 @@ namespace HexTex.Recuberation {
             edge = null;
             int attempt = 0;
             while(next == null || next.IsOccupied) {
+                if(attempt > 10) {//abort
+                    next = quad;
+                    rq = 0;
+                    break;
+                }
                 if(attempt > 0) {
                     if(attempt % 2 == 1) {
                         dirAxis = (Axis)(((int)dirAxis + 1) % 3);

@@ -52,6 +52,9 @@ namespace HexTex.Recuberation {
             } else if(e.KeyCode == Keys.Z) {
                 next = current;
                 ((Form)sender).Close();
+            } else if(e.KeyCode == Keys.Escape) {
+                next = -1;
+                ((Form)sender).Close();
             } else if(e.KeyCode == Keys.F) {
                 next = current;
                 fullScreen = !fullScreen;
