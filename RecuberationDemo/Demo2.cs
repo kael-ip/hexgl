@@ -39,15 +39,13 @@ namespace HexTex.Recuberation {
 
         Mesh earth;
         Mesh cube;
-        QuadMap map;
-        RollingController controller;
+        List<RollingController> controllers;
 
         public Demo2() {
             Quad.ccwFront = false;
-            earth = CreateEarth();
+            controllers = new List<RollingController>();
+            earth = CreateEarth(5);
             cube = CreateCube();
-            controller = new RollingController(map);
-            controller.Period = 256;
         }
         private Mesh CreateCube() {
             IBinaryVolume volume = new SphereVolume(0, 0, 0, 1);
@@ -68,7 +66,7 @@ namespace HexTex.Recuberation {
             }
             return mesh;
         }
-        private Mesh CreateEarth() {
+        private Mesh CreateEarth(int cubeCount) {
             QuadMap quadMap = new QuadMap();
             quadMap.BuildPlane(10, 10);
             var quads = quadMap.GetAllQuads();
@@ -78,11 +76,20 @@ namespace HexTex.Recuberation {
             } catch(Exception ex) {
                 Trace.TraceError(ex.Message);
             }
-            this.map = quadMap;
+            var rnd = new Random();
+            for(int i = 0; i < cubeCount; i++) {
+                var controller = new RollingController();
+                Quad quad = null;
+                while(quad == null || quad.IsOccupied) {
+                    quad = quads[rnd.Next(quads.Count)];
+                }
+                controller.Setup(quad, rnd.Next(2) == 0 ? Axis.X : Axis.Y, rnd.Next(2) != 0, 256, i + 1);
+                controllers.Add(controller);
+            }
             Mesh mesh = new Mesh(4, quads.Count, true, false);
-            int i = 0;
+            int offset = 0;
             foreach(var quad in quads) {
-                i = quad.FillQuadVerts(mesh.VertexBuffer, mesh.NormalBuffer, i);
+                offset = quad.FillQuadVerts(mesh.VertexBuffer, mesh.NormalBuffer, offset);
             }
             return mesh;
         }
@@ -212,9 +219,11 @@ void main(void)
             //_uObject.Set(System.Numerics.Matrix4x4.Identity.ToArray());
             DrawMesh(earth);
 
-            controller.Setup(_uOrigin, _uAngles);
-            DrawMesh(cube);
-            controller.Advance();
+            foreach(var controller in controllers) {
+                controller.ReadLocation(_uOrigin, _uAngles);
+                DrawMesh(cube);
+                controller.Advance();
+            }
 
             gl.Flush();
             gl.Finish();
@@ -240,7 +249,6 @@ void main(void)
     }
 
     class RollingController {
-        private QuadMap map;
         private Quad quad, next;
         private Axis dirAxis;
         private bool dirIsNegative;
@@ -248,20 +256,28 @@ void main(void)
         private bool rIsNegative;
         private System.Numerics.Matrix4x4 omat, mat;
         private int frame, period, rq;
+        private int color;
         public int Period { get; set; }
-        public RollingController(QuadMap map) {
-            this.map = map;
+        public RollingController() {
             this.omat = this.mat = System.Numerics.Matrix4x4.Identity;
-            this.quad = map.GetAllQuads()[0];
-            this.next = this.quad;
-            this.Period = 256;
+        }
+        public void Setup(Quad quad, Axis dirAxis, bool dirIsNegative, int period, int color) {
+            if(quad.IsOccupied) {
+                throw new ArgumentException();
+            }
+            quad.IsOccupied = true;
+            this.quad = quad;
+            this.next = quad;
+            this.dirAxis = dirAxis;
+            this.dirIsNegative = dirIsNegative;
+            this.Period = this.period = period;
             this.frame = 0;
-            this.period = Period;
             this.rq = 0;
-            this.dirAxis = Axis.X;
-            this.dirIsNegative = false;
+            this.color = color;
         }
         public void Advance() {
+            if(quad == null)
+                return;
             if(frame >= rq * period) {
                 frame = 0;
                 if(Period <= 0) {
@@ -294,29 +310,19 @@ void main(void)
             mat = System.Numerics.Matrix4x4.Multiply(mat, 
                 System.Numerics.Matrix4x4.CreateTranslation(quad.Location.X, quad.Location.Y, quad.Location.Z));
         }
-        public void Setup(UniformFloat position, UniformMatrix rotation) {
+        public void ReadLocation(UniformFloat position, UniformMatrix rotation) {
             position.Set(mat.M41, mat.M42, mat.M43);
             rotation.Set(mat.GetRotationMatrixAsArray());
         }
         private void ReAnimate() {
             //TODO: mark quad occupation and check if it is not occupied
+            quad.IsOccupied = false;
             quad = next;
-            ChooseNext();
-            if(edge.Q0 == quad) {
-                next = edge.Q1;
-                rIsNegative = false;
-            } else {
-                next = edge.Q0;
-                rIsNegative = true;
-            }
-            rq = edge.Angle - 1;
-            //if actual angle == 0, repeat, limit retries
-        }
-        private void ChooseNext() {
-            int attempt = 0;
-            //TODO: be smarter!
+            quad.IsOccupied = true;
+            next = null;
             edge = null;
-            while(edge == null) {
+            int attempt = 0;
+            while(next == null || next.IsOccupied) {
                 if(attempt > 0) {
                     if(attempt % 2 == 1) {
                         dirAxis = (Axis)(((int)dirAxis + 1) % 3);
@@ -325,9 +331,23 @@ void main(void)
                     }
                 }
                 edge = quad.GetEdge(dirAxis, dirIsNegative);
+                if(edge != null) {
+                    if(edge.Q0 == quad) {
+                        next = edge.Q1;
+                        rIsNegative = false;
+                    } else {
+                        next = edge.Q0;
+                        rIsNegative = true;
+                    }
+                    rq = edge.Angle - 1;
+                }
                 attempt++;
             }
-            System.Diagnostics.Trace.TraceInformation("Direction: {0} neg={1}", dirAxis, dirIsNegative);
+            next.IsOccupied = true;
+            next.Color = color;
+            //TODO: occupy quads based on volume cells and consider self-occupation for 0-moves
+            System.Diagnostics.Trace.TraceInformation("Direction: {1}{0}", dirAxis, dirIsNegative ? "-" : "+");
+            //if actual angle == 0, repeat, limit retries
         }
     }
 
