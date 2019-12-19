@@ -34,6 +34,7 @@ namespace HexTex.Recuberation {
             this.frame = 0;
             this.rq = 0;
             this.color = color;
+            UpdateLocation();
         }
         public void Advance() {
             if(quad == null)
