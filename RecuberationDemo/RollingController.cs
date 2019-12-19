@@ -58,20 +58,59 @@ namespace HexTex.Recuberation {
             if(rIsNegative) {
                 angle = -angle;
             }
+            float e = 100;// arbitrary value
             if(edge != null) {
                 if(edge.Axis == Axis.X) {
-                    rvec = rIsNegative ? new System.Numerics.Vector3(0, 1, 0) : new System.Numerics.Vector3(0, 0, 0);
+                    if(quad.NormalAxis == Axis.Z && !quad.NormalIsNegative && !rIsNegative || quad.NormalAxis == Axis.Y && !quad.NormalIsNegative && rIsNegative) {
+                        rvec = new System.Numerics.Vector3(e, 0, 0);
+                    } else if(quad.NormalAxis == Axis.Z && !quad.NormalIsNegative && rIsNegative || quad.NormalAxis == Axis.Y && quad.NormalIsNegative && !rIsNegative) {
+                        rvec = new System.Numerics.Vector3(e, 1, 0);
+                    } else if(quad.NormalAxis == Axis.Z && quad.NormalIsNegative && !rIsNegative || quad.NormalAxis == Axis.Y && quad.NormalIsNegative && rIsNegative) {
+                        rvec = new System.Numerics.Vector3(e, 1, 1);
+                    } else if(quad.NormalAxis == Axis.Z && quad.NormalIsNegative && rIsNegative || quad.NormalAxis == Axis.Y && !quad.NormalIsNegative && !rIsNegative) {
+                        rvec = new System.Numerics.Vector3(e, 0, 1);
+                    }
                     rmat = System.Numerics.Matrix4x4.CreateRotationX(angle, rvec);
                 } else if(edge.Axis == Axis.Y) {
-                    rvec = rIsNegative ? new System.Numerics.Vector3(0, 0, 0) : new System.Numerics.Vector3(1, 0, 0);
+                    if(quad.NormalAxis == Axis.Z && !quad.NormalIsNegative && rIsNegative || quad.NormalAxis == Axis.X && !quad.NormalIsNegative && !rIsNegative) {
+                        rvec = new System.Numerics.Vector3(0, e, 0);
+                    } else if(quad.NormalAxis == Axis.Z && !quad.NormalIsNegative && !rIsNegative || quad.NormalAxis == Axis.X && quad.NormalIsNegative && rIsNegative) {
+                        rvec = new System.Numerics.Vector3(1, e, 0);
+                    } else if(quad.NormalAxis == Axis.Z && quad.NormalIsNegative && !rIsNegative || quad.NormalAxis == Axis.X && !quad.NormalIsNegative && rIsNegative) {
+                        rvec = new System.Numerics.Vector3(0, e, 1);
+                    } else if(quad.NormalAxis == Axis.Z && quad.NormalIsNegative && rIsNegative || quad.NormalAxis == Axis.X && quad.NormalIsNegative && !rIsNegative) {
+                        rvec = new System.Numerics.Vector3(1, e, 1);
+                    }
                     rmat = System.Numerics.Matrix4x4.CreateRotationY(angle, rvec);
-                } else {
+                } else {// edge.Axis == Axis.Z
+                    if(quad.NormalAxis == Axis.Y && !quad.NormalIsNegative && rIsNegative || quad.NormalAxis == Axis.X && quad.NormalIsNegative && !rIsNegative) {
+                        rvec = new System.Numerics.Vector3(1, 0, e);
+                    } else if(quad.NormalAxis == Axis.Y && !quad.NormalIsNegative && !rIsNegative || quad.NormalAxis == Axis.X && !quad.NormalIsNegative && rIsNegative) {
+                        rvec = new System.Numerics.Vector3(0, 0, e);
+                    } else if(quad.NormalAxis == Axis.Y && quad.NormalIsNegative && !rIsNegative || quad.NormalAxis == Axis.X && quad.NormalIsNegative && rIsNegative) {
+                        rvec = new System.Numerics.Vector3(1, 1, e);
+                    } else if(quad.NormalAxis == Axis.Y && quad.NormalIsNegative && rIsNegative || quad.NormalAxis == Axis.X && !quad.NormalIsNegative && !rIsNegative) {
+                        rvec = new System.Numerics.Vector3(0, 1, e);
+                    }
                     rmat = System.Numerics.Matrix4x4.CreateRotationZ(angle, rvec);
                 }
             }
             mat = System.Numerics.Matrix4x4.Multiply(omat, rmat);
-            mat = System.Numerics.Matrix4x4.Multiply(mat,
-                System.Numerics.Matrix4x4.CreateTranslation(quad.Location.X, quad.Location.Y, quad.Location.Z));
+            System.Numerics.Vector3 tvec = new System.Numerics.Vector3(quad.Location.X, quad.Location.Y, quad.Location.Z);
+            if(quad.NormalIsNegative) {
+                switch(quad.NormalAxis) {
+                    case Axis.X:
+                        tvec.X -= 1;
+                        break;
+                    case Axis.Y:
+                        tvec.Y -= 1;
+                        break;
+                    case Axis.Z:
+                        tvec.Z -= 1;
+                        break;
+                }
+            }
+            mat = System.Numerics.Matrix4x4.Multiply(mat, System.Numerics.Matrix4x4.CreateTranslation(tvec));
         }
         public void ReadLocation(UniformFloat position, UniformMatrix rotation) {
             position.Set(mat.M41, mat.M42, mat.M43);
