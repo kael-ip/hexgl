@@ -206,6 +206,37 @@ namespace HexTex.Recuberation {
                 }
             }
         }
+        public void BuildCube() {
+            var quadN = AddQuad(Axis.Z, false, 1, 0, 0);
+            var quadF = AddQuad(Axis.Z, true, 0, 0, 0);
+            var quadT = AddQuad(Axis.Y, false, 1, 0, 0);
+            var quadB = AddQuad(Axis.Y, true, 0, 0, 0);
+            var quadR = AddQuad(Axis.X, false, 1, 0, 0);
+            var quadL = AddQuad(Axis.X, true, 0, 0, 0);
+            Connect(quadT, quadN, Axis.X, 3, Axis.Z, false, Axis.Y, false);
+            Connect(quadF, quadT, Axis.X, 3, Axis.Y, false, Axis.Z, true);
+            Connect(quadB, quadF, Axis.X, 3, Axis.Z, true, Axis.Y, true);
+            Connect(quadN, quadB, Axis.X, 3, Axis.Y, true, Axis.Z, false);
+
+            Connect(quadN, quadR, Axis.Y, 3, Axis.X, false, Axis.Z, false);
+            Connect(quadR, quadF, Axis.Y, 3, Axis.Z, true, Axis.X, false);
+            Connect(quadF, quadL, Axis.Y, 3, Axis.X, true, Axis.Z, true);
+            Connect(quadL, quadN, Axis.Y, 3, Axis.Z, false, Axis.X, true);
+
+            Connect(quadR, quadT, Axis.Z, 3, Axis.Y, false, Axis.X, false);
+            Connect(quadT, quadL, Axis.Z, 3, Axis.X, true, Axis.Y, false);
+            Connect(quadL, quadB, Axis.Z, 3, Axis.Y, true, Axis.X, true);
+            Connect(quadB, quadR, Axis.Z, 3, Axis.X, false, Axis.Y, true);
+        }
+        private void Connect(Quad quad0, Quad quad1, Axis edgeAxis, int edgeAngle, Axis dir0Axis, bool dir0Neg, Axis dir1Axis, bool dir1Neg) {
+            var edge = new Edge();
+            edge.Axis = edgeAxis;
+            edge.Angle = edgeAngle;
+            edge.Q0 = quad0;
+            edge.Q1 = quad1;
+            quad0.SetEdge(dir0Axis, dir0Neg, edge);
+            quad1.SetEdge(dir1Axis, dir1Neg, edge);
+        }
 
         public int CheckConnectivity() {
             var groups = new int[quads.Count];
