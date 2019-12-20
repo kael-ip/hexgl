@@ -67,8 +67,8 @@ namespace HexTex.Recuberation {
             return edges[index];
         }
         public void SetEdge(Axis axis, bool neg, Edge edge) {
-            //if(axis == NormalAxis)
-            //    throw new NotSupportedException();
+            if(axis == NormalAxis)
+                throw new NotSupportedException();
             var index = (int)axis + (neg ? 3 : 0);
             if(edges[index] != null)
                 throw new Exception("Edge already set");
@@ -139,7 +139,7 @@ namespace HexTex.Recuberation {
         }
         public void Build(IBinaryVolume volume) {
             BuildQuads(volume);
-            BuildEdges(volume);
+            BuildEdges();
         }
         private void BuildQuads(IBinaryVolume volume) {
             quads.Clear();
@@ -174,9 +174,41 @@ namespace HexTex.Recuberation {
             quads.Add(quad);
             return quad;
         }
-        private void BuildEdges(IBinaryVolume volume) {
+        private void BuildEdges() {
+            foreach(var quad in quads) {
+                Axis ax = (Axis)(((int)quad.NormalAxis + 1) % 3);
+                Axis ay = (Axis)(((int)quad.NormalAxis + 2) % 3);
+                int px = quad.LocationOnPlane.X;
+                int py = quad.LocationOnPlane.Y;
+                TryConnect(quad, !quad.NormalIsNegative, ay, 2, ax, false, ax, true, quad.NormalAxis, quad.NormalIsNegative, quad.PlaneValue, px + 1, py);
+                TryConnect(quad, quad.NormalIsNegative, ay, 2, ax, false, ax, true, quad.NormalAxis, quad.NormalIsNegative, quad.PlaneValue, px - 1, py);
+                TryConnect(quad, !quad.NormalIsNegative, ax, 2, ay, true, ay, false, quad.NormalAxis, quad.NormalIsNegative, quad.PlaneValue, px, py - 1);
+                TryConnect(quad, quad.NormalIsNegative, ax, 2, ay, true, ay, false, quad.NormalAxis, quad.NormalIsNegative, quad.PlaneValue, px, py + 1);
+            }
         }
-
+        private void TryConnect(Quad quad, bool is0, Axis edgeAxis, int edgeAngle, Axis dir0Axis, bool dir0Neg, Axis dir1Axis, bool dir1Neg, Axis qAxis, bool qNeg, int qLevel, int qU, int qV) {
+            Quad other = null;
+            if(is0) {
+                if(quad.GetEdge(dir0Axis, dir0Neg) != null)
+                    return;
+                other = FindQuad(qAxis, qNeg, qLevel, qU, qV);
+                if(other != null)
+                    Connect(quad, other, edgeAxis, edgeAngle, dir0Axis, dir0Neg, dir1Axis, dir1Neg);
+            } else {
+                if(quad.GetEdge(dir1Axis, dir1Neg) != null)
+                    return;
+                other = FindQuad(qAxis, qNeg, qLevel, qU, qV);
+                if(other != null)
+                    Connect(other, quad, edgeAxis, edgeAngle, dir0Axis, dir0Neg, dir1Axis, dir1Neg);
+            }
+        }
+        private Quad FindQuad(Axis qAxis, bool qNeg, int qLevel, int qU, int qV) {
+            foreach(var quad in quads) {
+                if(quad.NormalAxis == qAxis && quad.NormalIsNegative == qNeg && quad.PlaneValue == qLevel && quad.LocationOnPlane.X == qU && quad.LocationOnPlane.Y == qV)
+                    return quad;
+            }
+            return null;
+        }
         public void BuildPlane(int xsize, int ysize) {
             var row = new Quad[xsize];
             for(int y = 0; y < ysize; y++) {
@@ -184,23 +216,11 @@ namespace HexTex.Recuberation {
                     var quad = AddQuad(Axis.Z, false, 0, x, y);
                     if(y > 0) {
                         var prev = row[x];
-                        var edge = new Edge();
-                        edge.Axis = Axis.X;
-                        edge.Angle = 2;
-                        edge.Q0 = quad;
-                        edge.Q1 = prev;
-                        quad.SetEdge(Axis.Y, true, edge);
-                        prev.SetEdge(Axis.Y, false, edge);
+                        Connect(quad, prev, Axis.X, 2, Axis.Y, true, Axis.Y, false);
                     }
                     if(x > 0) {
                         var prev = row[x - 1];
-                        var edge = new Edge();
-                        edge.Axis = Axis.Y;
-                        edge.Angle = 2;
-                        edge.Q0 = prev;
-                        edge.Q1 = quad;
-                        quad.SetEdge(Axis.X, false, edge);
-                        prev.SetEdge(Axis.X, true, edge);
+                        Connect(prev, quad, Axis.Y, 2, Axis.X, true, Axis.X, false);
                     }
                     row[x] = quad;
                 }
