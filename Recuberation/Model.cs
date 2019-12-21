@@ -89,6 +89,10 @@ namespace HexTex.Recuberation {
         }
         public Quad() {
         }
+        public override string ToString() {
+            return string.Format("{1}{0} {2}:{3} {4}", NormalAxis, NormalIsNegative ? "-" : "+", PlaneValue, LocationOnPlane, Location);
+        }
+        internal int Debug_EdgeCount { get { return edges.Count(e => e != null); } }
         public static bool ccwFront = false;
         public int FillQuadVerts(float[] vbuffer, float[] nbuffer, int offset) { // fill vertex buffer with 4 verts (12 floats)
             int a = (int)NormalAxis;
@@ -127,6 +131,9 @@ namespace HexTex.Recuberation {
         public int Angle { get; set; } //unsigned (when axis points outside, CW is positive for Q0->Q1)
         public Quad Q0 { get; set; }
         public Quad Q1 { get; set; }
+        public override string ToString() {
+            return string.Format("{0}{1} ({2})->({3})", Axis, Angle, Q0, Q1);
+        }
     }
 
     public class QuadMap {
@@ -266,6 +273,18 @@ namespace HexTex.Recuberation {
                     currentGroup++;
                     Collect(quads[i], groups, currentGroup);
                 }
+            }
+            List<Quad>[] groupQuads = new List<Quad>[currentGroup];
+            int[] qe = new int[7];
+            for(int i = 0; i < quads.Count; i++) {
+                var g = groupQuads[groups[i] - 1];
+                if(g == null) {
+                    g = new List<Quad>();
+                    groupQuads[groups[i] - 1] = g;
+                }
+                var quad = quads[i];
+                g.Add(quad);
+                qe[quad.Debug_EdgeCount]++;
             }
             return currentGroup;
         }
