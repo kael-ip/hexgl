@@ -8,13 +8,15 @@ namespace HexTex.Recuberation.Generators {
 
     class SphereVolume : IBinaryVolume {
         private float x, y, z, r, r2;
+        private bool inverse;
         private Bounds3D bounds;
-        public SphereVolume(float x, float y, float z, float r) {
+        public SphereVolume(float x, float y, float z, float r, bool inverse = false) {
             this.x = x;
             this.y = y;
             this.z = z;
             this.r = r;
             this.r2 = r * r;
+            this.inverse = inverse;
             this.bounds = new Bounds3D() {
                 Xmin = (int)Math.Floor(x - r),
                 Xmax = (int)Math.Ceiling(x + r),
@@ -29,7 +31,7 @@ namespace HexTex.Recuberation.Generators {
         }
         public bool IsOccupied(int x, int y, int z) {
             var s2 = (this.x - x) * (this.x - x) + (this.y - y) * (this.y - y) + (this.z - z) * (this.z - z);
-            return s2 < r2;
+            return inverse ? s2 > r2 : s2 < r2;
         }
     }
 

@@ -10,16 +10,16 @@ using HexTex.Recuberation.Generators;
 
 namespace HexTex.Recuberation {
 
-    class Demo4 : SimpleDemoBase {
+    class Demo5 : SimpleDemoBase {
         static float q3 = (float)Math.Sqrt(3);
         Mesh earth;
         Mesh cube;
         List<RollingController> controllers;
         float[][] palette;
 
-        public Demo4() {
+        public Demo5() {
             controllers = new List<RollingController>();
-            earth = CreateEarth(9);
+            earth = CreateEarth(37);
             cube = CreateCube();
             palette = GeneratePalette(20);
             palette[0] = new float[] { 1f, 1f, 1f };
@@ -42,7 +42,7 @@ namespace HexTex.Recuberation {
             return mesh;
         }
         private Mesh CreateEarth(int cubeCount) {
-            IBinaryVolume volume = new SphereVolume(0, 0, 0, 3.3f);
+            IBinaryVolume volume = new SphereVolume(0, 0, 0, 7.8f, true);
             QuadMap quadMap = new QuadMap();
             quadMap.Build(volume);
             var quads = quadMap.GetAllQuads();
@@ -112,7 +112,7 @@ namespace HexTex.Recuberation {
                 vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(0, 0, 0));
                 vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationZ((float)tRotation));
                 vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationX((float)(-Math.PI / 2 * 0.66)));
-                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(0, 0, -10f));
+                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(0, 0, -6f));
                 vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreatePerspectiveOffCenter(-hheight * aspect, hheight * aspect, -hheight, hheight, clipNear, clipFar));
                 _uPerspective.Set(vmat.ToArray());
             }

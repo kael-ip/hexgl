@@ -54,6 +54,7 @@
     <Compile Include="Demo2.cs" />
     <Compile Include="Demo3.cs" />
     <Compile Include="Demo4.cs" />
+    <Compile Include="Demo5.cs" />
     <Compile Include="DemoForm.cs">
       <SubType>Form</SubType>
     </Compile>

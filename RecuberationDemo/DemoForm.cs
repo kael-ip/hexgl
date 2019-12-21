@@ -13,6 +13,8 @@ namespace HexTex.Recuberation {
             if(fullScreen) {
                 this.FormBorderStyle = FormBorderStyle.None;
                 this.Bounds = Screen.PrimaryScreen.Bounds;
+            } else {
+                this.ClientSize = new System.Drawing.Size(640, 320);
             }
             this.TopMost = true;
             this.SetStyle(ControlStyles.UserPaint, true);
