@@ -58,6 +58,8 @@
     <Compile Include="DemoForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="DemoMB.cs" />
+    <Compile Include="DemoMB2.cs" />
     <Compile Include="DemoTest1.cs" />
     <Compile Include="Generators\Volumes.cs" />
     <Compile Include="Helper.cs" />

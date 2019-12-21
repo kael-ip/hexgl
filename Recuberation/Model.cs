@@ -7,12 +7,20 @@ using System.Threading.Tasks;
 namespace HexTex.Recuberation {
 
     public struct Bounds3D {
-        public int Xmin { get; set; }
-        public int Xmax { get; set; }
-        public int Ymin { get; set; }
-        public int Ymax { get; set; }
-        public int Zmin { get; set; }
-        public int Zmax { get; set; }
+        public int Xmin;
+        public int Xmax;
+        public int Ymin;
+        public int Ymax;
+        public int Zmin;
+        public int Zmax;
+        public Bounds3D(int Xmin, int Xmax, int Ymin, int Ymax, int Zmin, int Zmax) {
+            this.Xmin = Xmin;
+            this.Xmax = Xmax;
+            this.Ymin = Ymin;
+            this.Ymax = Ymax;
+            this.Zmin = Zmin;
+            this.Zmax = Zmax;
+        }
         public override string ToString() {
             return string.Format("({{{0}, {1}, {2}}}, {{{3}, {4}, {5}}})", Xmin, Ymin, Zmin, Xmax, Ymax, Zmax);
         }

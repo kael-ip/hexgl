@@ -35,6 +35,37 @@ namespace HexTex.Recuberation.Generators {
         }
     }
 
+    class MetaballVolume : IBinaryVolume {
+        class Ball {
+            public float x, y, z, r, r2;
+        }
+        private List<Ball> balls = new List<Ball>();
+        private float threshold;
+        private bool inverse;
+        private Bounds3D bounds;
+        public MetaballVolume(Bounds3D bounds, float threshold, bool inverse = false) {
+            this.bounds = bounds;
+            this.threshold = threshold;
+            this.inverse = inverse;
+        }
+        public void AddBall(float x, float y, float z, float r) {
+            balls.Add(new Ball() { x = x, y = y, z = z, r = r, r2 = r * r });
+        }
+        public Bounds3D Bounds {
+            get { return bounds; }
+        }
+        public bool IsOccupied(int x, int y, int z) {
+            float w = 0;
+            foreach(var ball in balls) {
+                var s2 = (ball.x - x) * (ball.x - x) + (ball.y - y) * (ball.y - y) + (ball.z - z) * (ball.z - z);
+                if(s2 != 0) {
+                    w += ball.r2 / s2;
+                }
+            }
+            return inverse ? w < threshold : w > threshold;
+        }
+    }
+
     class RandomHeightPlane : IBinaryVolume {
         int xsize, ysize, zmax;
         private int[] heights;
