@@ -185,12 +185,37 @@ namespace HexTex.Recuberation {
             foreach(var quad in quads) {
                 Axis ax = (Axis)(((int)quad.NormalAxis + 1) % 3);
                 Axis ay = (Axis)(((int)quad.NormalAxis + 2) % 3);
+                bool nn = quad.NormalIsNegative;
                 int px = quad.LocationOnPlane.X;
                 int py = quad.LocationOnPlane.Y;
-                TryConnect(quad, !quad.NormalIsNegative, ay, 2, ax, false, ax, true, quad.NormalAxis, quad.NormalIsNegative, quad.PlaneValue, px + 1, py);
-                TryConnect(quad, quad.NormalIsNegative, ay, 2, ax, false, ax, true, quad.NormalAxis, quad.NormalIsNegative, quad.PlaneValue, px - 1, py);
-                TryConnect(quad, !quad.NormalIsNegative, ax, 2, ay, true, ay, false, quad.NormalAxis, quad.NormalIsNegative, quad.PlaneValue, px, py - 1);
-                TryConnect(quad, quad.NormalIsNegative, ax, 2, ay, true, ay, false, quad.NormalAxis, quad.NormalIsNegative, quad.PlaneValue, px, py + 1);
+                int pi = nn ? 1 : 0;
+                TryConnect(quad, !nn, ay, 2, ax, nn, ax, !nn, quad.NormalAxis, nn, quad.PlaneValue, px + 1, py);
+                TryConnect(quad, nn, ay, 2, ax, nn, ax, !nn, quad.NormalAxis, nn, quad.PlaneValue, px - 1, py);
+                TryConnect(quad, !nn, ax, 2, ay, !nn, ay, nn, quad.NormalAxis, nn, quad.PlaneValue, px, py - 1);
+                TryConnect(quad, nn, ax, 2, ay, !nn, ay, nn, quad.NormalAxis, nn, quad.PlaneValue, px, py + 1);
+                // 108
+                if(!quad.NormalIsNegative) {
+                    TryConnect(quad, false, ay, 1, quad.NormalAxis, true, ax, true, ax, false, px, py, quad.PlaneValue);//left inner 82 >*
+                    TryConnect(quad, true, ay, 1, ax, false, quad.NormalAxis, true, ax, true, px + 1, py, quad.PlaneValue);//right inner 78 (+78 >48)
+                    TryConnect(quad, false, ax, 1, quad.NormalAxis, true, ay, false, ay, true, py + 1, quad.PlaneValue, px);//top inner 78 (+78 >48)
+                    TryConnect(quad, true, ax, 1, ay, true, quad.NormalAxis, true, ay, false, py, quad.PlaneValue, px);//bottom inner 82 >*
+
+                    TryConnect(quad, false, ay, 3, quad.NormalAxis, false, ax, true, ax, true, px, py, quad.PlaneValue - 1);//left outer 63 (+63 >25)
+                    TryConnect(quad, true, ay, 3, ax, false, quad.NormalAxis, false, ax, false, px + 1, py, quad.PlaneValue - 1);//right outer 73 >*
+                    TryConnect(quad, false, ax, 3, quad.NormalAxis, false, ay, false, ay, false, py + 1, quad.PlaneValue - 1, px);//top outer 73 >*
+                    TryConnect(quad, true, ax, 3, ay, true, quad.NormalAxis, false, ay, true, py, quad.PlaneValue - 1, px);//bottom outer 63 (+63 >25)
+                }// >10
+                if(quad.NormalIsNegative) {// -X > ax=Y, ay=Z // !false > nn, !true > !nn
+                    TryConnect(quad, false, ay, 1, quad.NormalAxis, false, ax, false, ax, true, px + 1, py, quad.PlaneValue - pi);//left inner 82 >*
+                    TryConnect(quad, true, ay, 1, ax, true, quad.NormalAxis, false, ax, false, px, py, quad.PlaneValue - pi);//right inner 78 (+78 >48)
+                    TryConnect(quad, false, ax, 1, quad.NormalAxis, false, ay, true, ay, false, py, quad.PlaneValue - pi, px);//bottom inner 78 (+78 >48)
+                    TryConnect(quad, true, ax, 1, ay, false, quad.NormalAxis, false, ay, true, py + 1, quad.PlaneValue - pi, px);//top inner 82 >*
+
+                    TryConnect(quad, false, ay, 3, quad.NormalAxis, true, ax, false, ax, false, px + pi, py, quad.PlaneValue);//left outer 63 (+63 >25)
+                    TryConnect(quad, true, ay, 3, ax, true, quad.NormalAxis, true, ax, true, px, py, quad.PlaneValue);//right outer 73 >*
+                    TryConnect(quad, false, ax, 3, quad.NormalAxis, true, ay, true, ay, true, py, quad.PlaneValue, px);//bottom outer 73 >*
+                    TryConnect(quad, true, ax, 3, ay, false, quad.NormalAxis, true, ay, false, py + pi, quad.PlaneValue, px);//top outer 63 63 (+63 >25)
+                }// >10
             }
         }
         private void TryConnect(Quad quad, bool is0, Axis edgeAxis, int edgeAngle, Axis dir0Axis, bool dir0Neg, Axis dir1Axis, bool dir1Neg, Axis qAxis, bool qNeg, int qLevel, int qU, int qV) {
