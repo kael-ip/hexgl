@@ -10,6 +10,7 @@ namespace HexTex.Recuberation {
         static bool fullScreen = false;
         static Type[] sequence = new Type[]{
             typeof(DemoMB2),
+            typeof(DemoTitle),
             typeof(DemoMB),
             typeof(Demo5),
             typeof(Demo4),

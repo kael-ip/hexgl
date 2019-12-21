@@ -297,6 +297,17 @@ namespace HexTex.Recuberation {
             quad0.SetEdge(dir0Axis, dir0Neg, edge);
             quad1.SetEdge(dir1Axis, dir1Neg, edge);
         }
+        public void BuildHeightPlane(int[] map, int xsize, int ysize, int maskLevel, bool invy) {
+            for(int y = 0; y < ysize; y++) {
+                for(int x = 0; x < xsize; x++) {
+                    var v = map[x + y * xsize];
+                    if(v != maskLevel) {
+                        var yy = invy ? ysize - y : y;
+                        var quad = AddQuad(Axis.Z, false, v, x, yy);
+                    }
+                }
+            }
+        }
 
         public int CheckConnectivity() {
             var groups = new int[quads.Count];
