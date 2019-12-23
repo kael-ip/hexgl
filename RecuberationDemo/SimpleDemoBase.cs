@@ -24,6 +24,7 @@ namespace HexTex.Recuberation {
         protected UniformFloat _uAmbientLight;
         protected UniformFloat _uShadeLight;
         protected Sampler _tTexture;
+        protected Sampler _tPalette;
         protected UniformMatrix _uObject;
 
         protected static float iq2 = (float)(1 / Math.Sqrt(2));
@@ -37,11 +38,14 @@ namespace HexTex.Recuberation {
         protected Size viewportSize;
         protected Point mousePosition;
 
+        private uint[] palette;
+
         public SimpleDemoBase() {
             Quad.ccwFront = false;
         }
         public override void Prepare(IGL gl) {
             renderer = new Renderer(gl);
+            palette = CreatePalette();
             BuildShaders(gl);
             LoadTextures(gl);
             SetProjection();
@@ -71,10 +75,10 @@ uniform vec3 uLightVec;
 attribute vec3 aPoint;
 attribute vec3 aLightNormal;
 attribute vec2 aTexCoord;
-attribute vec3 aVertexColor;
+attribute float aVertexColor;
 varying vec2 vTexCoord;
 varying float vLightDot;
-varying vec3 vVertexColor;
+varying float vVertexColor;
 void main(void)
 {
 	vec3 position = uViewAngles * (uAngles * aPoint.xyz + uOrigin - uViewOrigin);
@@ -91,14 +95,16 @@ precision mediump float;
 uniform float uAmbientLight;
 uniform float uShadeLight;
 uniform sampler2D tTexture;
+uniform sampler2D tPalette;
 varying vec2 vTexCoord;
 varying float vLightDot;
-varying vec3 vVertexColor;
+varying float vVertexColor;
 void main(void)
 {
-	//vec4 texture = texture2D(tTexture, vTexCoord);
-    vec4 texture = texture2D(tTexture, vTexCoord) * vec4(vVertexColor.rgb, 1.0);
-	gl_FragColor = vec4(texture.rgb * mix(1.0, vLightDot * uShadeLight + uAmbientLight, texture.a), 1.0);
+	vec4 texture = texture2D(tTexture, vTexCoord);
+    float lightness = mix(0, vLightDot * uShadeLight + uAmbientLight, texture.a);
+    vec2 index = vec2(vVertexColor, clamp(lightness, 0, 1));
+    gl_FragColor = texture2D(tPalette, index);
 }
 ";
             var vsh = new VertexShader() { Source = vshaderSource };
@@ -122,24 +128,35 @@ void main(void)
             program.Attributes.Add(_aPoint = new AttributeFloat("aPoint", 3));
             program.Attributes.Add(_aLightNormal = new AttributeFloat("aLightNormal", 3));
             program.Attributes.Add(_aTexCoord = new AttributeFloat("aTexCoord", 2));
-            program.Attributes.Add(_aVertexColor = new AttributeFloat("aVertexColor", 3));
+            program.Attributes.Add(_aVertexColor = new AttributeFloat("aVertexColor", 1));
+            program.Uniforms.Add(_tPalette = new Sampler("tPalette"));
             renderer.BuildAll();
 
-            _aVertexColor.Set(1f, 1f, 1f);
+            _aVertexColor.Set(1f);
         }
         protected virtual void LoadTextures(IGL gl) {
-            uint[] textures = new uint[1];
-            gl.GenTextures(1, textures);
+            uint[] textures = new uint[2];
+            gl.GenTextures(2, textures);
             uint[] data = new uint[] { 0xffffffff };
-            LoadTexture(gl, 0, GL.TEXTURE0, 0, 0, data);
+            LoadTexture(gl, textures[0], 0, 0, 0, data);
+            LoadTexture(gl, textures[1], 1, 0, 8, palette);
         }
-        protected void LoadTexture(IGL gl, uint id, uint slot, int pw, int ph, Array data, bool genMipMap = false) {
-            gl.ActiveTexture(slot);
+        protected void LoadTexture(IGL gl, uint id, uint unit, int pw, int ph, Array data, bool genMipMap = false, bool repeat = false) {
+            gl.ActiveTexture(GL.TEXTURE0 + unit);
             gl.BindTexture(GL.TEXTURE_2D, id);
             gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.NEAREST);
-            gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR_MIPMAP_LINEAR);
-            gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.REPEAT);
-            gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.REPEAT);
+            if(genMipMap) {
+                gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR_MIPMAP_LINEAR);
+            } else {
+                gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.NEAREST);
+            }
+            if(repeat) {
+                gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.REPEAT);
+                gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.REPEAT);
+            } else {
+                gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
+                gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
+            }
             Helper.WithPinned(data, ptr => {
                 gl.TexImage2D(GL.TEXTURE_2D, 0, GL.RGBA, 1 << pw, 1 << ph, 0, GL.RGBA, GL.UNSIGNED_BYTE, ptr);
             });
@@ -160,11 +177,29 @@ void main(void)
 
             gl.Viewport(0, 0, viewportSize.Width, viewportSize.Height);
 
+            _tTexture.Set(0);
+            _tPalette.Set(1);
             RedrawCore(gl);
 
             gl.Flush();
             gl.Finish();
         }
         protected abstract void RedrawCore(IGL gl);
+        protected virtual uint[] CreatePalette() {
+            return CreatePalette256(0xffffffff);
+        }
+        private uint[] CreatePalette256(uint color) {
+            var palette = new uint[256];
+            for(var i = 0; i < 256; i++) {
+                palette[i] = Scale(color, i, 255);
+            }
+            return palette;
+        }
+        private uint Scale(uint color, int n, int d) {
+            var r = ((color >> 0) & 255) * n / d;
+            var g = ((color >> 8) & 255) * n / d;
+            var b = ((color >> 16) & 255) * n / d;
+            return (uint)(0xff000000 | (b << 16) | (g << 8) | (r << 0));
+        }
     }
 }

@@ -10,7 +10,7 @@ using HexTex.Recuberation.Generators;
 
 namespace HexTex.Recuberation {
 
-    class DemoTitle : SimpleDemoBase {
+    class DemoTitle : SimpleDemoBase2 {
         int[] pic1 = new int[]{
             //0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
             0,1,1,1,1,1,0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1,1,0,0,1,1,0,0,1,1,0,
@@ -34,12 +34,9 @@ namespace HexTex.Recuberation {
         };
         static float q3 = (float)Math.Sqrt(3);
         Mesh banner;
-        float[][] palette;
 
         public DemoTitle() {
             banner = CreateBanner();
-            palette = DemoHelper.GeneratePalette(20);
-            palette[0] = new float[] { 1f, 1f, 1f };
         }
         private Mesh CreateBanner() {
             QuadMap quadMap = new QuadMap();
@@ -65,7 +62,6 @@ namespace HexTex.Recuberation {
             double time = ((0.001 * dt.Millisecond) + dt.Second) / 60;
             double tRotation = Math.PI * 2 * time;
             //_uPerspective.Set(matProjection);
-            _tTexture.Set(0);
             _uAmbientLight.Set(0.2f);
             _uShadeLight.Set(0.5f);
             //_uLightVec.Set(iq3, -iq3, iq3);
@@ -123,29 +119,8 @@ namespace HexTex.Recuberation {
             //_uOrigin.Set((float)(oc * -16 - 0 - os * 32), -9.5f, (float)(os * -16 - oc * 30 + 20));
             _uOrigin.Set((float)(oc * -16 - 0 + os * 24), -9.5f, (float)(os * -16 - oc * 30 + 20));
             //_uObject.Set(System.Numerics.Matrix4x4.Identity.ToArray());
-            _aVertexColor.Set(1.0f, 1.0f, 1.0f);
+            _aVertexColor.Set(1.0f);
             DrawMesh(banner);
-        }
-        private void DrawMesh(Mesh mesh) {
-            var hVertex = GCHandle.Alloc(mesh.VertexBuffer, GCHandleType.Pinned);
-            var hNormal = GCHandle.Alloc(mesh.NormalBuffer, GCHandleType.Pinned);
-
-            _aPoint.Set(hVertex.AddrOfPinnedObject(), 3);
-            _aTexCoord.Set(0, 0);
-            _aLightNormal.Set(hNormal.AddrOfPinnedObject(), 3);
-
-            for(int i = 0, j = 0; i < mesh.PrimitiveCount; i++, j += mesh.PrimitiveLength) {
-                if(mesh.GetColor != null) {
-                    var c = palette[mesh.GetColor(i) % palette.Length];
-                    _aVertexColor.Set(c[0], c[1], c[2]);
-                }
-                renderer.DrawTriangleFans(program, j, mesh.PrimitiveLength);
-            }
-
-            if(hVertex.IsAllocated)
-                hVertex.Free();
-            if(hNormal.IsAllocated)
-                hNormal.Free();
         }
     }
 }

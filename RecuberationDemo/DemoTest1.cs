@@ -40,6 +40,7 @@ namespace HexTex.Recuberation {
             };
         }
         protected override void LoadTextures(IGL gl) {
+            base.LoadTextures(gl);
             int pw = 2, ph = 2;
             uint e = 0xffcc22ee;
             var bitmapData = new uint[]{
@@ -50,7 +51,7 @@ namespace HexTex.Recuberation {
             };
             var textures = new uint[1];
             gl.GenTextures(1, textures);
-            LoadTexture(gl, textures[0], GL.TEXTURE0, pw, ph, bitmapData);
+            LoadTexture(gl, textures[0], 0, pw, ph, bitmapData, true);
         }
         protected override void RedrawCore(IGL gl) {
             _uPerspective.Set(matProjection);
@@ -71,6 +72,7 @@ namespace HexTex.Recuberation {
             _aTexCoord.Set(hTexUV.AddrOfPinnedObject(), 2);
             //_aLightNormal.Set(hNormal.AddrOfPinnedObject(), 3);
             _aLightNormal.Set(0, 0, 1);
+            _aVertexColor.Set(1.0f);
 
             _uAngles.Set(angles);
 

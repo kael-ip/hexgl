@@ -9,18 +9,15 @@ using HexTex.OpenGL;
 
 namespace HexTex.Recuberation {
 
-    class Demo3 : SimpleDemoBase {
+    class Demo3 : SimpleDemoBase2 {
         Mesh earth;
         Mesh cube;
         List<RollingController> controllers;
-        float[][] palette;
 
         public Demo3() {
             controllers = new List<RollingController>();
             earth = CreateEarth(1);
             cube = CreateCube();
-            palette = DemoHelper.GeneratePalette(20);
-            palette[0] = new float[] { 1f, 1f, 1f };
         }
         private Mesh CreateCube() {
             QuadMap quadMap = new QuadMap();
@@ -69,7 +66,6 @@ namespace HexTex.Recuberation {
         }
         protected override void RedrawCore(IGL gl) {
             //_uPerspective.Set(matProjection);
-            _tTexture.Set(0);
             _uAmbientLight.Set(0.2f);
             _uShadeLight.Set(0.5f);
             //_uLightVec.Set(iq3, -iq3, iq3);
@@ -96,38 +92,15 @@ namespace HexTex.Recuberation {
             //GLMath.Rotate3(angles, tRotation, 0, 0, 1);
             _uOrigin.Set(0, 0, 0);
             //_uObject.Set(System.Numerics.Matrix4x4.Identity.ToArray());
-            _aVertexColor.Set(1.0f, 1.0f, 1.0f);
+            _aVertexColor.Set(1.0f);
             DrawMesh(earth);
 
             foreach(var controller in controllers) {
                 controller.ReadLocation(_uOrigin, _uAngles);
-                //_aVertexColor.Set(1.0f, 0.4f, 0.4f);
-                var c = palette[controller.Color % palette.Length];
-                _aVertexColor.Set(c[0], c[1], c[2]);
+                _aVertexColor.Set((controller.Color & 255) / 255f);
                 DrawMesh(cube);
                 controller.Advance();
             }
-        }
-        private void DrawMesh(Mesh mesh) {
-            var hVertex = GCHandle.Alloc(mesh.VertexBuffer, GCHandleType.Pinned);
-            var hNormal = GCHandle.Alloc(mesh.NormalBuffer, GCHandleType.Pinned);
-
-            _aPoint.Set(hVertex.AddrOfPinnedObject(), 3);
-            _aTexCoord.Set(0, 0);
-            _aLightNormal.Set(hNormal.AddrOfPinnedObject(), 3);
-
-            for(int i = 0, j = 0; i < mesh.PrimitiveCount; i++, j += mesh.PrimitiveLength) {
-                if(mesh.GetColor != null) {
-                    var c = palette[mesh.GetColor(i) % palette.Length];
-                    _aVertexColor.Set(c[0], c[1], c[2]);
-                }
-                renderer.DrawTriangleFans(program, j, mesh.PrimitiveLength);
-            }
-
-            if(hVertex.IsAllocated)
-                hVertex.Free();
-            if(hNormal.IsAllocated)
-                hNormal.Free();
         }
     }
 }

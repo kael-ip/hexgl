@@ -372,14 +372,14 @@ namespace HexTex.OpenGL {
         }
     }
     public class Sampler : Uniform {
-        private int textureSlot;
+        private int textureUnit;
         public Sampler(string name) : base(name) { }
-        public void Set(int slot) {
-            this.textureSlot = slot;
+        public void Set(int unit) {
+            this.textureUnit = unit;
             IsDirty = true;
         }
         internal override void Setup(IGL gl, uint location) {
-            gl.Uniform1i(location, textureSlot);
+            gl.Uniform1i(location, textureUnit);
             IsDirty = false;
         }
     }
