@@ -62,8 +62,6 @@ namespace HexTex.Recuberation {
             double time = ((0.001 * dt.Millisecond) + dt.Second) / 60;
             double tRotation = Math.PI * 2 * time;
             //_uPerspective.Set(matProjection);
-            _uAmbientLight.Set(0.2f);
-            _uShadeLight.Set(0.5f);
             //_uLightVec.Set(iq3, -iq3, iq3);
             //_uLightVec.Set(Convert.ToSingle(q3 * 0.5f * Math.Cos(-tRotation)), Convert.ToSingle(q3 * 0.5f * Math.Sin(-tRotation)), 0.5f);
             _uLightVec.Set(0, 0, 1);
@@ -119,7 +117,7 @@ namespace HexTex.Recuberation {
             //_uOrigin.Set((float)(oc * -16 - 0 - os * 32), -9.5f, (float)(os * -16 - oc * 30 + 20));
             _uOrigin.Set((float)(oc * -16 - 0 + os * 24), -9.5f, (float)(os * -16 - oc * 30 + 20));
             //_uObject.Set(System.Numerics.Matrix4x4.Identity.ToArray());
-            _aVertexColor.Set(1.0f);
+            SetColorIndex(0);
             DrawMesh(banner);
         }
     }

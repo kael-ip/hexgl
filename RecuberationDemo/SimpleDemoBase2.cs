@@ -18,7 +18,7 @@ namespace HexTex.Recuberation {
 
             for(int i = 0, j = 0; i < mesh.PrimitiveCount; i++, j += mesh.PrimitiveLength) {
                 if(mesh.GetColor != null) {
-                    _aVertexColor.Set((mesh.GetColor(i) & 255) / 255f);
+                    SetColorIndex(mesh.GetColor(i));
                 }
                 renderer.DrawTriangleFans(program, j, mesh.PrimitiveLength);
             }

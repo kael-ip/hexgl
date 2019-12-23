@@ -72,7 +72,7 @@ namespace HexTex.Recuberation {
             _aTexCoord.Set(hTexUV.AddrOfPinnedObject(), 2);
             //_aLightNormal.Set(hNormal.AddrOfPinnedObject(), 3);
             _aLightNormal.Set(0, 0, 1);
-            _aVertexColor.Set(1.0f);
+            SetColorIndex(0);
 
             _uAngles.Set(angles);
 

@@ -39,8 +39,6 @@ namespace HexTex.Recuberation {
         protected override void RedrawCore(IGL gl) {
             _uPerspective.Set(matProjection);
             _tTexture.Set(0);
-            _uAmbientLight.Set(0.2f);
-            _uShadeLight.Set(0.5f);
             //_uLightVec.Set(iq3, -iq3, iq3);
             _uLightVec.Set(0, 0, 1);
             _uViewOrigin.Set(0, 0, 500f);

@@ -139,7 +139,7 @@ void main(void)
             gl.GenTextures(2, textures);
             uint[] data = new uint[] { 0xffffffff };
             LoadTexture(gl, textures[0], 0, 0, 0, data);
-            LoadTexture(gl, textures[1], 1, 0, 8, palette);
+            LoadTexture(gl, textures[1], 1, 4, 4, palette);
         }
         protected void LoadTexture(IGL gl, uint id, uint unit, int pw, int ph, Array data, bool genMipMap = false, bool repeat = false) {
             gl.ActiveTexture(GL.TEXTURE0 + unit);
@@ -179,6 +179,8 @@ void main(void)
 
             _tTexture.Set(0);
             _tPalette.Set(1);
+            _uAmbientLight.Set(0.01f);
+            _uShadeLight.Set(1.0f);
             RedrawCore(gl);
 
             gl.Flush();
@@ -186,7 +188,8 @@ void main(void)
         }
         protected abstract void RedrawCore(IGL gl);
         protected virtual uint[] CreatePalette() {
-            return CreatePalette256(0xffffffff);
+            //return CreatePalette256(0xffffffff);
+            return CreatePalette16x16(colors);
         }
         private uint[] CreatePalette256(uint color) {
             var palette = new uint[256];
@@ -195,11 +198,43 @@ void main(void)
             }
             return palette;
         }
+        static uint[] colors = new uint[]{
+            0xffffff,
+
+            0xff0000,
+            0x00ff00,
+            0x0000ff,
+            0x00ffff,
+            0xff00ff,
+            0xffff00,
+
+            0x770000,
+            0x007700,
+            0x000077,
+            0x0077ff,
+            0x00ff77,
+            0x7700ff,
+            0xff0077,
+            0x77ff00,
+            0xff7700,
+        };
+        private uint[] CreatePalette16x16(uint[] colors) {
+            var palette = new uint[256];
+            for(var j = 0; j < 16; j++) {
+                for(var i = 0; i < 16; i++) {
+                    palette[j + i * 16] = Scale(colors[j], i, 15);
+                }
+            }
+            return palette;
+        }
         private uint Scale(uint color, int n, int d) {
             var r = ((color >> 0) & 255) * n / d;
             var g = ((color >> 8) & 255) * n / d;
             var b = ((color >> 16) & 255) * n / d;
             return (uint)(0xff000000 | (b << 16) | (g << 8) | (r << 0));
+        }
+        protected void SetColorIndex(int c) {
+            _aVertexColor.Set((c & 15) / 15f);
         }
     }
 }

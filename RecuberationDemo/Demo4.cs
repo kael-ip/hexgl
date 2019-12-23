@@ -72,8 +72,6 @@ namespace HexTex.Recuberation {
             double time = ((0.001 * dt.Millisecond) + dt.Second) / 60;
             double tRotation = Math.PI * 2 * time;
             //_uPerspective.Set(matProjection);
-            _uAmbientLight.Set(0.2f);
-            _uShadeLight.Set(0.5f);
             //_uLightVec.Set(iq3, -iq3, iq3);
             _uLightVec.Set(Convert.ToSingle(q3 * 0.5f * Math.Cos(-tRotation)), Convert.ToSingle(q3 * 0.5f * Math.Sin(-tRotation)), 0.5f);
             //_uViewOrigin.Set(0, 0, 500f);
@@ -96,12 +94,12 @@ namespace HexTex.Recuberation {
             //GLMath.Rotate3(angles, tRotation, 0, 0, 1);
             _uOrigin.Set(0, 0, 0);
             //_uObject.Set(System.Numerics.Matrix4x4.Identity.ToArray());
-            _aVertexColor.Set(1.0f);
+            SetColorIndex(0);
             DrawMesh(earth);
 
             foreach(var controller in controllers) {
                 controller.ReadLocation(_uOrigin, _uAngles);
-                _aVertexColor.Set((controller.Color & 255) / 255f);
+                SetColorIndex(controller.Color);
                 DrawMesh(cube);
                 controller.Advance();
             }
