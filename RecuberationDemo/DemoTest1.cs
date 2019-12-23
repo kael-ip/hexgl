@@ -48,21 +48,9 @@ namespace HexTex.Recuberation {
                 e,0,e,0,
                 e,e,0,0
             };
-            textures = new uint[1];
+            var textures = new uint[1];
             gl.GenTextures(1, textures);
             LoadTexture(gl, textures[0], GL.TEXTURE0, pw, ph, bitmapData);
-        }
-        private void LoadTexture(IGL gl, uint id, uint slot, int pw, int ph, Array data) {
-            gl.ActiveTexture(slot);
-            gl.BindTexture(GL.TEXTURE_2D, id);
-            gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.NEAREST);
-            gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR_MIPMAP_LINEAR);
-            gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.REPEAT);
-            gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.REPEAT);
-            Helper.WithPinned(data, ptr => {
-                gl.TexImage2D(GL.TEXTURE_2D, 0, GL.RGBA, 1 << pw, 1 << ph, 0, GL.RGBA, GL.UNSIGNED_BYTE, ptr);
-            });
-            gl.GenerateMipmap(GL.TEXTURE_2D);
         }
         protected override void RedrawCore(IGL gl) {
             _uPerspective.Set(matProjection);

@@ -37,8 +37,6 @@ namespace HexTex.Recuberation {
         protected Size viewportSize;
         protected Point mousePosition;
 
-        protected uint[] textures;
-
         public SimpleDemoBase() {
             Quad.ccwFront = false;
         }
@@ -130,17 +128,24 @@ void main(void)
             _aVertexColor.Set(1f, 1f, 1f);
         }
         protected virtual void LoadTextures(IGL gl) {
-            gl.ActiveTexture(GL.TEXTURE0);
-            //gl.BindTexture(GL.TEXTURE_2D, id);
+            uint[] textures = new uint[1];
+            gl.GenTextures(1, textures);
+            uint[] data = new uint[] { 0xffffffff };
+            LoadTexture(gl, 0, GL.TEXTURE0, 0, 0, data);
+        }
+        protected void LoadTexture(IGL gl, uint id, uint slot, int pw, int ph, Array data, bool genMipMap = false) {
+            gl.ActiveTexture(slot);
+            gl.BindTexture(GL.TEXTURE_2D, id);
             gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.NEAREST);
-            gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.NEAREST);
+            gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR_MIPMAP_LINEAR);
             gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.REPEAT);
             gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.REPEAT);
-            uint[] data = new uint[] { 0xffffffff };
-            int pw = 0, ph = 0;
             Helper.WithPinned(data, ptr => {
                 gl.TexImage2D(GL.TEXTURE_2D, 0, GL.RGBA, 1 << pw, 1 << ph, 0, GL.RGBA, GL.UNSIGNED_BYTE, ptr);
             });
+            if(genMipMap) {
+                gl.GenerateMipmap(GL.TEXTURE_2D);
+            }
         }
         public override void Redraw(IGL gl) {
             gl.ClearColor(0, 0, 0, 0);
