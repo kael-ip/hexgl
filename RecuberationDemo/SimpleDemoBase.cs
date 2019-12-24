@@ -199,24 +199,57 @@ void main(void)
             return palette;
         }
         static uint[] colors = new uint[]{
-            0xffffff,
+            //0xffffff,
 
-            0xff0000,
-            0x00ff00,
-            0x0000ff,
-            0x00ffff,
-            0xff00ff,
-            0xffff00,
+            //NES light gray
+            0xBCBCBC,
 
-            0x770000,
-            0x007700,
-            0x000077,
-            0x0077ff,
-            0x00ff77,
-            0x7700ff,
-            0xff0077,
-            0x77ff00,
-            0xff7700,
+            //NES row 1
+            0x0078F8,
+            0x0058F8,
+            0x6844FC,
+            0xD800CC,
+            0xE40058,
+            0xF83800,
+            0xE45C10,
+            //0xAC7C00,
+            0x00B800,
+            0x00A800,
+            //0x00A844,
+            //0x008888,
+
+            //NES row 2
+            //0x3CBCFC,
+            //0x6888FC,
+            //0x9878F8,
+            //0xF878F8,
+            0xF85898,
+            //0xF87858,
+            //0xFCA044,
+            0xF8B800,
+            0xB8F818,
+            //0x58D854,
+            0x58F898,
+            0x00E8D8,
+
+            0xD8D828 //extra
+
+            //0xff0000,
+            //0x00ff00,
+            //0x0000ff,
+            //0x00ffff,
+            //0xff00ff,
+            //0xffff00,
+
+            //0x770000,
+            //0x007700,
+            //0x000077,
+            //0x0077ff,
+            //0x00ff77,
+            //0x7700ff,
+            //0xff0077,
+            //0x77ff00,
+            //0xff7700,
         };
         private uint[] CreatePalette16x16(uint[] colors) {
             var palette = new uint[256];
@@ -234,7 +267,7 @@ void main(void)
             return (uint)(0xff000000 | (b << 16) | (g << 8) | (r << 0));
         }
         protected void SetColorIndex(int c) {
-            _aVertexColor.Set((c & 15) / 15f);
+            _aVertexColor.Set((c & 15) / 16f + 1 / 32f);
         }
     }
 }
