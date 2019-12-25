@@ -161,19 +161,14 @@ namespace HexTex.Recuberation {
 
     class WalkingSystem {
         private QuadMap map;
-        private Mesh mesh;
+        private QMesh mesh;
         private List<RollingController> controllers;
         public WalkingSystem(QuadMap map) {
             this.map = map;
             controllers = new List<RollingController>();
             Trace.TraceInformation("Quads count = {0}", map.Quads.Count);
             Trace.TraceInformation("Quad groups = {0}", map.CheckConnectivity());
-            this.mesh = new Mesh(4, map.Quads.Count, true, false);
-            mesh.GetColor = index => map.Quads[index].Color;
-            int offset = 0;
-            foreach(var quad in map.Quads) {
-                offset = quad.FillQuadVerts(mesh.VertexBuffer, mesh.NormalBuffer, offset);
-            }
+            this.mesh = new QMesh(map.Quads);
         }
         public void AddRandomWalkers(int cubeCount, int seed, int stepFramesMin, int stepFramesMag = 8, int stepFramesVar = 5) {
             var rnd = new PRNG(seed);

@@ -49,12 +49,7 @@ namespace HexTex.Recuberation {
             quadMap.BuildHeightPlane(pic1, 32, 17, 0, true);
             var quads = quadMap.Quads;
             Trace.TraceInformation("Quads count = {0}", quads.Count);
-            Mesh mesh = new Mesh(4, quads.Count, true, false);
-            //mesh.GetColor = index => quads[index].Color;
-            int offset = 0;
-            foreach(var quad in quads) {
-                offset = quad.FillQuadVerts(mesh.VertexBuffer, mesh.NormalBuffer, offset);
-            }
+            Mesh mesh = new QMesh(quads);
             return mesh;
         }
         protected override void RedrawCore(IGL gl) {
@@ -118,7 +113,7 @@ namespace HexTex.Recuberation {
             _uOrigin.Set((float)(oc * -16 - 0 + os * 24), -9.5f, (float)(os * -16 - oc * 30 + 20));
             //_uObject.Set(System.Numerics.Matrix4x4.Identity.ToArray());
             SetColorIndex(0);
-            DrawMesh(banner);
+            DrawMesh(banner, false);
         }
     }
 }

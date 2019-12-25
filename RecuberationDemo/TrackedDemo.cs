@@ -202,11 +202,11 @@ namespace HexTex.Recuberation {
             //_uObject.Set(System.Numerics.Matrix4x4.Identity.ToArray());
             SetColorIndex(0);
             if(earth != null) {
-                DrawMesh(earth.Mesh);
+                DrawMesh(earth.Mesh, true);
                 foreach(var controller in earth.Controllers) {
                     controller.ReadLocation(_uOrigin, _uAngles);
                     SetColorIndex(controller.Color);
-                    DrawMesh(objCube);
+                    DrawMesh(objCube, false);
                 }
             }
         }

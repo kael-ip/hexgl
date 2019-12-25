@@ -8,7 +8,7 @@ using HexTex.OpenGL;
 
 namespace HexTex.Recuberation {
     abstract class SimpleDemoBase2 : SimpleDemoBase {
-        protected void DrawMesh(Mesh mesh) {
+        protected void DrawMesh(Mesh mesh, bool colored) {
             var hVertex = GCHandle.Alloc(mesh.VertexBuffer, GCHandleType.Pinned);
             var hNormal = GCHandle.Alloc(mesh.NormalBuffer, GCHandleType.Pinned);
 
@@ -17,8 +17,8 @@ namespace HexTex.Recuberation {
             _aLightNormal.Set(hNormal.AddrOfPinnedObject(), 3);
 
             for(int i = 0, j = 0; i < mesh.PrimitiveCount; i++, j += mesh.PrimitiveLength) {
-                if(mesh.GetColor != null) {
-                    SetColorIndex(mesh.GetColor(i));
+                if(colored){
+                    SetColorIndex(((QMesh)mesh).Quads[i].Color);
                 }
                 renderer.DrawTriangleFans(program, j, mesh.PrimitiveLength);
             }

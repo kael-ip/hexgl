@@ -59,12 +59,7 @@ namespace HexTex.Recuberation {
                 controller.Setup(quad, rnd.Next(2) == 0 ? Axis.X : Axis.Y, rnd.Next(2) != 0, 128 + (8 << rnd.Next(5)), i + 1);
                 controllers.Add(controller);
             }
-            Mesh mesh = new Mesh(4, quads.Count, true, false);
-            mesh.GetColor = index => quads[index].Color;
-            int offset = 0;
-            foreach(var quad in quads) {
-                offset = quad.FillQuadVerts(mesh.VertexBuffer, mesh.NormalBuffer, offset);
-            }
+            Mesh mesh = new QMesh(quads);
             return mesh;
         }
         protected override void RedrawCore(IGL gl) {
@@ -95,12 +90,12 @@ namespace HexTex.Recuberation {
             _uOrigin.Set(0, 0, 0);
             //_uObject.Set(System.Numerics.Matrix4x4.Identity.ToArray());
             SetColorIndex(0);
-            DrawMesh(earth);
+            DrawMesh(earth, true);
 
             foreach(var controller in controllers) {
                 controller.ReadLocation(_uOrigin, _uAngles);
                 SetColorIndex(controller.Color);
-                DrawMesh(cube);
+                DrawMesh(cube, false);
                 controller.Advance();
             }
         }

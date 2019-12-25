@@ -117,7 +117,6 @@ namespace HexTex.Recuberation {
         public float[] TexUVBuffer { get; private set; }
         public int PrimitiveCount { get; private set; }
         public int PrimitiveLength { get; private set; }
-        public Func<int, int> GetColor { get; set; }
         public Mesh(int length, int count, bool useNormal, bool useTexUV) {
             PrimitiveLength = length;
             PrimitiveCount = count;
@@ -127,6 +126,19 @@ namespace HexTex.Recuberation {
             }
             if(useTexUV) {
                 TexUVBuffer = new float[2 * length * count];
+            }
+        }
+    }
+
+    class QMesh : Mesh {
+        private IList<Quad> quads;
+        public IList<Quad> Quads { get { return quads; } }
+        public QMesh(IList<Quad> quads)
+            : base(4, quads.Count, true, false) {
+            this.quads = quads;
+            int offset = 0;
+            foreach(var quad in quads) {
+                offset = quad.FillQuadVerts(VertexBuffer, NormalBuffer, offset);
             }
         }
     }
