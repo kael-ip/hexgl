@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -155,6 +156,43 @@ namespace HexTex.Recuberation {
             //TODO: occupy quads based on volume cells and consider self-occupation for 0-moves
             System.Diagnostics.Trace.TraceInformation("Direction: {1}{0}", dirAxis, dirIsNegative ? "-" : "+");
             //if actual angle == 0, repeat, limit retries
+        }
+    }
+
+    class WalkingSystem {
+        private QuadMap map;
+        private Mesh mesh;
+        private List<RollingController> controllers;
+        public WalkingSystem(QuadMap map) {
+            this.map = map;
+            controllers = new List<RollingController>();
+            Trace.TraceInformation("Quads count = {0}", map.Quads.Count);
+            Trace.TraceInformation("Quad groups = {0}", map.CheckConnectivity());
+            this.mesh = new Mesh(4, map.Quads.Count, true, false);
+            mesh.GetColor = index => map.Quads[index].Color;
+            int offset = 0;
+            foreach(var quad in map.Quads) {
+                offset = quad.FillQuadVerts(mesh.VertexBuffer, mesh.NormalBuffer, offset);
+            }
+        }
+        public void AddRandomWalkers(int cubeCount, int seed, int stepFramesMin, int stepFramesMag = 8, int stepFramesVar = 5) {
+            var rnd = new PRNG(seed);
+            for(int i = 0; i < cubeCount; i++) {
+                var controller = new RollingController();
+                Quad quad = null;
+                while(quad == null || quad.IsOccupied) {
+                    quad = map.Quads[rnd.Next(map.Quads.Count)];
+                }
+                controller.Setup(quad, (Axis)rnd.Next(3), (rnd.Next() & 1) != 0, stepFramesMin + (stepFramesMag << rnd.Next(stepFramesVar)), i + 1);
+                controllers.Add(controller);
+            }
+        }
+        public Mesh Mesh { get { return mesh; } }
+        public List<RollingController> Controllers { get { return controllers; } }
+        public void Advance() {
+            foreach(var controller in controllers) {
+                controller.Advance();
+            }
         }
     }
 }

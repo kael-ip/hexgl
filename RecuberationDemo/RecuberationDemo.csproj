@@ -50,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Animatron.cs" />
     <Compile Include="Demo1.cs" />
     <Compile Include="Demo2.cs" />
     <Compile Include="Demo3.cs" />
@@ -69,6 +70,8 @@
     <Compile Include="RollingController.cs" />
     <Compile Include="SimpleDemoBase.cs" />
     <Compile Include="SimpleDemoBase2.cs" />
+    <Compile Include="TrackedDemo.cs" />
+    <Compile Include="TrackedDemoBase.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
