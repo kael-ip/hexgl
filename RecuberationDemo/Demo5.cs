@@ -24,7 +24,7 @@ namespace HexTex.Recuberation {
         private Mesh CreateCube() {
             QuadMap quadMap = new QuadMap();
             quadMap.BuildCube();
-            var quads = quadMap.GetAllQuads();
+            var quads = quadMap.Quads;
             Trace.TraceInformation("Quads count = {0}", quads.Count);
             try {
                 Trace.TraceInformation("Quad groups = {0}", quadMap.CheckConnectivity());
@@ -42,7 +42,7 @@ namespace HexTex.Recuberation {
             IBinaryVolume volume = new SphereVolume(0, 0, 0, 7.8f, true);
             QuadMap quadMap = new QuadMap();
             quadMap.Build(volume);
-            var quads = quadMap.GetAllQuads();
+            var quads = quadMap.Quads;
             Trace.TraceInformation("Quads count = {0}", quads.Count);
             try {
                 Trace.TraceInformation("Quad groups = {0}", quadMap.CheckConnectivity());

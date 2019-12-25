@@ -23,7 +23,7 @@ namespace HexTex.Recuberation {
             //IBinaryVolume volume = new SphereVolume(0, 0, 0, 1);
             QuadMap quadMap = new QuadMap();
             quadMap.Build(volume);
-            var quads = quadMap.GetAllQuads();
+            var quads = quadMap.Quads;
             Trace.TraceInformation("Quads count = {0}", quads.Count);
             try {
                 Trace.TraceInformation("Quad groups = {0}", quadMap.CheckConnectivity());

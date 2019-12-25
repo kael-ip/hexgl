@@ -47,7 +47,7 @@ namespace HexTex.Recuberation {
                 }
             }
             quadMap.BuildHeightPlane(pic1, 32, 17, 0, true);
-            var quads = quadMap.GetAllQuads();
+            var quads = quadMap.Quads;
             Trace.TraceInformation("Quads count = {0}", quads.Count);
             Mesh mesh = new Mesh(4, quads.Count, true, false);
             //mesh.GetColor = index => quads[index].Color;

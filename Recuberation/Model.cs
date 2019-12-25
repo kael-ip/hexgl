@@ -146,12 +146,7 @@ namespace HexTex.Recuberation {
 
     public class QuadMap {
         private List<Quad> quads = new List<Quad>();
-        public IList<Quad> GetAllQuads() { // all (renderable) quads
-            return quads.AsReadOnly();
-        }
-        public IList<Quad> GetFreeQuads() { // unoccupied valid quads only
-            throw new NotImplementedException();
-        }
+        public IList<Quad> Quads { get { return quads.AsReadOnly(); } }
         public void Build(IBinaryVolume volume) {
             BuildQuads(volume);
             BuildEdges();
