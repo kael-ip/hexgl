@@ -74,7 +74,7 @@ namespace HexTex.Recuberation.Generators {
             this.xsize = xsize;
             this.ysize = ysize;
             this.zmax = zmax;
-            var rnd = new Random(seed);
+            var rnd = new PRNG(seed);
             heights = new int[xsize * ysize];
             int p = 0;
             for(int y = 0; y < ysize; y++) {

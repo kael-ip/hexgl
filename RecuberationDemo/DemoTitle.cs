@@ -41,7 +41,7 @@ namespace HexTex.Recuberation {
         private Mesh CreateBanner() {
             QuadMap quadMap = new QuadMap();
             {
-                var rnd = new Random();
+                var rnd = new PRNG();
                 for(var i = 0; i < pic1.Length; i++) {
                     pic1[i] *= rnd.Next(12) + 1;
                 }

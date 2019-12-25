@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
+using HexTex.OpenGL;
 
 namespace HexTex.OpenGL {
     
@@ -40,6 +41,9 @@ namespace HexTex.OpenGL {
             m[8] = (float)(c + z * z * (1 - c));
         }
     }
+}
+
+namespace HexTex.Recuberation {
 
     public static class NumericsHelper {
         public static float[] ToArray(this System.Numerics.Matrix4x4 m) {
@@ -79,11 +83,11 @@ namespace HexTex.OpenGL {
 
     class DemoHelper {
         public static float[][] GeneratePalette(int count, float luma = 0.7f, float z = 0.4f) {
-            var rnd = new Random();
+            var rnd = new PRNG();
             var palette = new float[count][];
             for(var i = 0; i < count; i++) {
                 var rgb = new float[3];
-                var a = rnd.NextDouble() * 3;
+                var a = rnd.Next(1 << 15) * 3.0 / (1 << 15);
                 var ii = Math.Floor(a);
                 var j = (int)ii;
                 var c0 = (1 - z) * luma;
@@ -126,4 +130,20 @@ namespace HexTex.OpenGL {
             }
         }
     }
+
+    class PRNG {
+        const int a = 1103515245, c = 12345, m = (int)((1L << 31) - 1); //glibc
+        static PRNG shared = new PRNG(1);
+        int seed;
+        public PRNG(int seed) {
+            this.seed = seed;
+        }
+        public PRNG() : this(shared.Next()) { }
+        public int Next() {
+            return seed = (seed * a + c) & m;
+        }
+        public int Next(int max) {
+            return (int)(((((long)Next()) * max) >> 31) & m);
+        }
+    }    
 }

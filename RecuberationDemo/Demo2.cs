@@ -48,7 +48,7 @@ namespace HexTex.Recuberation {
             } catch(Exception ex) {
                 Trace.TraceError(ex.Message);
             }
-            var rnd = new Random();
+            var rnd = new PRNG();
             for(int i = 0; i < cubeCount; i++) {
                 var controller = new RollingController();
                 Quad quad = null;
