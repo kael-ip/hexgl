@@ -15,6 +15,25 @@ namespace HexTex.Recuberation {
             tracker.RowRate = 3;
             tracker.Add(new Tracker.CommandLabel());
             tracker.Add(new Tracker.CommandCall(t => {
+                earth = null;
+                bullet = objBanner;
+                camz = -10f;
+                lightVec[0] = 0;
+                lightVec[1] = 0;
+                lightVec[2] = 1f;
+                camPos[0] = 0;
+                camPos[1] = 0;
+                camPos[2] = 0;
+                speed1 = 1;
+                frame0 = t.Frame;
+                t.FrameHandler = OnFrame_UpdateStateV4;
+            }));
+            tracker.Add(new Tracker.CommandDelay(64));
+            tracker.Add(new Tracker.CommandCall(t => {
+                bullet = null;
+                t.FrameHandler = null;
+            }));
+            tracker.Add(new Tracker.CommandCall(t => {
                 earth = sysPlane;
                 camz = -10f;
                 lightVec[0] = 0;
@@ -23,9 +42,9 @@ namespace HexTex.Recuberation {
                 camPos[0] = -5f;
                 camPos[1] = -5f;
                 camPos[2] = 0;
-                speed1 = 1;
+                speed1 = 1f / 8;
                 frame0 = t.Frame;
-                t.FrameHandler = UpdateStateV3;
+                t.FrameHandler = OnFrame_UpdateStateV3;
             }));
             tracker.Add(new Tracker.CommandDelay(64));
             tracker.Add(new Tracker.CommandCall(t => {
@@ -41,7 +60,7 @@ namespace HexTex.Recuberation {
                 lightVec[2] = 1f;
                 speed1 = 1;
                 frame0 = t.Frame;
-                t.FrameHandler = UpdateStateV3;
+                t.FrameHandler = OnFrame_UpdateStateV3;
             }));
             tracker.Add(new Tracker.CommandDelay(64));
             tracker.Add(new Tracker.CommandCall(t => {
@@ -49,31 +68,31 @@ namespace HexTex.Recuberation {
                 camz = -10f;
                 speed1 = 1;
                 frame0 = t.Frame;
-                t.FrameHandler = UpdateState;
+                t.FrameHandler = OnFrame_UpdateStateV1;
             }));
             tracker.Add(new Tracker.CommandDelay(64));
             tracker.Add(new Tracker.CommandCall(t => {
                 earth = sysMetaBall4;
                 camz = -12f;
-                speed1 = -5;
+                speed1 = -3;
                 frame0 = t.Frame;
-                t.FrameHandler = UpdateState;
+                t.FrameHandler = OnFrame_UpdateStateV1;
             }));
             tracker.Add(new Tracker.CommandDelay(64));
             tracker.Add(new Tracker.CommandCall(t => {
                 earth = sysMetaBall2;
                 camz = -10f;
-                speed1 = 5;
+                speed1 = 3;
                 frame0 = t.Frame;
-                t.FrameHandler = UpdateState;
+                t.FrameHandler = OnFrame_UpdateStateV1;
             }));
             tracker.Add(new Tracker.CommandDelay(64));
             tracker.Add(new Tracker.CommandCall(t => {
                 earth = sysSphereInside;
                 camz = -6f;
-                speed1 = -1;
+                speed1 = -1f / 16;
                 frame0 = t.Frame;
-                t.FrameHandler = UpdateState;
+                t.FrameHandler = OnFrame_UpdateStateV1;
             }));
             tracker.Add(new Tracker.CommandDelay(64));
             tracker.Add(new Tracker.CommandLoop(0, 1));
@@ -83,6 +102,7 @@ namespace HexTex.Recuberation {
         //
         //
 
+        // preloaded:
         static float q3 = (float)Math.Sqrt(3);
         WalkingSystem sysCube1;
         WalkingSystem sysSphere3;
@@ -90,17 +110,24 @@ namespace HexTex.Recuberation {
         WalkingSystem sysPlane;
         WalkingSystem sysMetaBall4;
         WalkingSystem sysMetaBall2;
-        WalkingSystem earth;
         Mesh objCube;
+        Mesh objBanner;
+
+        // runtime:
+        WalkingSystem earth;
+        Mesh bullet;
         double tRotation;
         float speed1;
-        float camz;
+        float camz, camRotZ, camRotX;
         float[] camPos = new float[3];
         float[] lightVec = new float[3];
+        float[] objMat = new float[12];
+        float[] identityMat = new float[] { 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 };
         int frame0;
 
         protected override void Init() {
             objCube = CreateCube();
+            objBanner = CreateBanner();
             sysCube1 = CreateEarthCube();
             sysSphere3 = CreateEarthSphere3();
             sysPlane = CreateEarthPlane();
@@ -117,6 +144,19 @@ namespace HexTex.Recuberation {
             foreach(var quad in quads) {
                 i = quad.FillQuadVerts(mesh.VertexBuffer, mesh.NormalBuffer, i);
             }
+            return mesh;
+        }
+        private Mesh CreateBanner() {
+            QuadMap quadMap = new QuadMap();
+            int[] data = new int[DemoData.Banner1.Length];
+            var rnd = new PRNG();
+            for(var i = 0; i < data.Length; i++) {
+                data[i] = DemoData.Banner1[i] * (rnd.Next(12) + 1);
+            }
+            quadMap.BuildHeightPlane(data, 32, 17, 0, true);
+            var quads = quadMap.Quads;
+            Trace.TraceInformation("Quads count = {0}", quads.Count);
+            Mesh mesh = new QMesh(quads);
             return mesh;
         }
         private WalkingSystem CreateEarthPlane() {
@@ -177,29 +217,23 @@ namespace HexTex.Recuberation {
             return system;
         }
         protected override void RedrawCore(IGL gl) {
-            //_uPerspective.Set(matProjection);
-            //_uLightVec.Set(iq3, -iq3, iq3);
             _uLightVec.Set(lightVec);
-            //_uViewOrigin.Set(0, 0, 500f);
             _uViewOrigin.Set(0, 0, 0);
-            //_uViewOrigin.Set(mousePosition.X - viewportSize.Width / 2, mousePosition.Y - viewportSize.Height, 500f);
-            float[] angles = new float[] { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
-            _uAngles.Set(angles);
-            _uViewAngles.Set(angles);
+            _uViewAngles.Set(identityMat, 0, 9);
 
             {
                 System.Numerics.Matrix4x4 vmat = System.Numerics.Matrix4x4.Identity;
                 vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(camPos[0], camPos[1], camPos[2]));
-                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationZ((float)tRotation));
-                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationX((float)(-Math.PI / 2 * 0.66)));
+                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationZ(camRotZ));
+                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationX(camRotX));
                 vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(0, 0, camz));
                 vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreatePerspectiveOffCenter(-hheight * aspect, hheight * aspect, -hheight, hheight, clipNear, clipFar));
                 _uPerspective.Set(vmat.ToArray());
             }
 
-            //GLMath.Rotate3(angles, tRotation, 0, 0, 1);
-            _uOrigin.Set(0, 0, 0);
-            //_uObject.Set(System.Numerics.Matrix4x4.Identity.ToArray());
+            _uAngles.Set(objMat, 0, 9);
+            _uOrigin.Set(objMat, 9, 3);
+
             SetColorIndex(0);
             if(earth != null) {
                 DrawMesh(earth.Mesh, true);
@@ -209,26 +243,57 @@ namespace HexTex.Recuberation {
                     DrawMesh(objCube, false);
                 }
             }
+            if(bullet != null) {
+                DrawMesh(bullet, false);
+            }
         }
-        private void UpdateState(Tracker tracker) {
+        private void SetObjMatIdentity() {
+            Array.Copy(identityMat, objMat, 9);
+            objMat[9] = 0;
+            objMat[10] = 0;
+            objMat[11] = 0;
+        }
+        private void OnFrame_UpdateStateV1(Tracker tracker) {
             Trace.TraceInformation(">>> {0}", (tracker.Frame - frame0));
-            //double time = (tracker.Frame - frame0) * (1 / 640.0);
-            double time = (tracker.Frame - frame0) * (1 / 700.0);
+            double time = (tracker.Frame - frame0) * (1.0 / (64 * tracker.RowRate));
             tRotation = Math.PI * 2 * time * speed1;
             lightVec[0] = Convert.ToSingle(q3 * 0.5f * Math.Cos(-tRotation));
             lightVec[1] = Convert.ToSingle(q3 * 0.5f * Math.Sin(-tRotation));
             lightVec[2] = 0.5f;
+            camRotZ = (float)tRotation;
+            camRotX = (float)(-Math.PI / 2 * 0.66);
+            SetObjMatIdentity();
             if(earth != null) {
                 earth.Advance();
             }
         }
-        private void UpdateStateV3(Tracker tracker) {
+        private void OnFrame_UpdateStateV3(Tracker tracker) {
             Trace.TraceInformation(">>> {0}", (tracker.Frame - frame0));
-            double time = (tracker.Frame - frame0) * (1 / 700.0);
+            double time = (tracker.Frame - frame0) * (1.0 / (64 * tracker.RowRate));
             tRotation = Math.PI * 2 * time * speed1;
+            camRotZ = (float)tRotation;
+            camRotX = (float)(-Math.PI / 2 * 0.66);
+            SetObjMatIdentity();
             if(earth != null) {
                 earth.Advance();
             }
+        }
+        private void OnFrame_UpdateStateV4(Tracker tracker) {
+            Trace.TraceInformation(">>> {0}", (tracker.Frame - frame0));
+            double time = (tracker.Frame - frame0) * (1.0 / (64 * tracker.RowRate));
+            tRotation = Math.PI * (0.5 + time);
+            double tts = Math.Sin(tRotation);
+            double tt = tts * tts * tts * tts * tts;
+            double os = Math.Sin(Math.PI * 0.5 * tt), oc = Math.Cos(Math.PI * 0.5 * tt);
+            double fz = 1 - 1 / (1 + Math.Abs(tt) * 1000);
+            camz = (float)(-10 * fz - 800 * (1 - fz));
+            clipNear = (float)(2 * fz + 160 * (1 - fz));
+            camRotZ = 0;
+            camRotX = 0;
+            GLMath.Rotate3(objMat, Math.PI * 0.5 * tt, 0, 1, 0);
+            objMat[9] = (float)(oc * -16 - 0 + os * 24);
+            objMat[10] = -9.5f;
+            objMat[11] = (float)(os * -16 - oc * 30 + 20);
         }
     }
 }
