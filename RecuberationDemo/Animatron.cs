@@ -55,7 +55,6 @@ namespace HexTex.Recuberation {
         public int RowRate;
         private int frameCounter;
         private int rowCounter;
-        public int Row { get; private set; }
         public int Frame { get; private set; }
         private List<TrackerCommand> program = new List<TrackerCommand>();
         private int pc;
@@ -71,16 +70,11 @@ namespace HexTex.Recuberation {
             pc = 0;
         }
         public void Advance() {
-            if(frameCounter > 0) {
-                frameCounter--;
-                if(FrameHandler != null)
-                    FrameHandler.Invoke(this);
-                Frame++;
-            } else {
-                if(rowCounter > 0) {
-                    rowCounter--;
-                    Row++;
-                } else {
+            frameCounter--;
+            if(frameCounter <= 0) {
+                rowCounter--;
+                if(rowCounter <= 0) {
+                    rowCounter = 0;
                     while(rowCounter == 0 && pc < program.Count) {
                         var command = program[pc++];
                         command.Execute(this);
@@ -88,6 +82,9 @@ namespace HexTex.Recuberation {
                 }
                 frameCounter = RowRate;
             }
+            if(FrameHandler != null)
+                FrameHandler.Invoke(this);
+            Frame++;
         }
     }
 }
