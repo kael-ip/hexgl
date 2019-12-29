@@ -31,6 +31,7 @@ namespace HexTex.Recuberation {
             tracker.Add(new Tracker.CommandDelay(64));
             tracker.Add(new Tracker.CommandCall(t => {
                 bullet = null;
+                clipNear = 3f;
                 t.FrameHandler = null;
             }));
             tracker.Add(new Tracker.CommandCall(t => {
@@ -221,15 +222,18 @@ namespace HexTex.Recuberation {
             _uViewOrigin.Set(0, 0, 0);
             _uViewAngles.Set(identityMat, 0, 9);
 
-            {
-                System.Numerics.Matrix4x4 vmat = System.Numerics.Matrix4x4.Identity;
-                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(camPos[0], camPos[1], camPos[2]));
-                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationZ(camRotZ));
-                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationX(camRotX));
-                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(0, 0, camz));
-                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreatePerspectiveOffCenter(-hheight * aspect, hheight * aspect, -hheight, hheight, clipNear, clipFar));
-                _uPerspective.Set(vmat.ToArray());
-            }
+            var projection = GLMath.Frustum(-hheight * aspect, hheight * aspect, -hheight, hheight, clipNear, clipFar);
+            _uPerspective.Set(projection);
+
+            System.Numerics.Matrix4x4 vmat = System.Numerics.Matrix4x4.Identity;
+            vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(0, 0, -camz));
+            vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationX(-camRotX));
+            vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationZ(-camRotZ));
+            vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(-camPos[0], -camPos[1], -camPos[2]));
+            var amat = System.Numerics.Matrix4x4.Transpose(vmat).GetRotationMatrixAsArray();
+            _uViewAngles.Set(amat, 0, 9);
+            var omat = vmat.ToArray();
+            _uViewOrigin.Set(omat, 12, 3);
 
             _uAngles.Set(objMat, 0, 9);
             _uOrigin.Set(objMat, 9, 3);

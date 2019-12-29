@@ -86,7 +86,8 @@ void main(void)
     //vec4 position4 = uObject * vec4(aPoint.xyz, 1.0);
     //gl_Position = uPerspective * position4;
 	vTexCoord = aTexCoord;
-    vLightDot = dot(uViewAngles * (uAngles * aLightNormal), uLightVec);
+    //vLightDot = dot(uViewAngles * (uAngles * aLightNormal), uLightVec);
+    vLightDot = dot((uAngles * aLightNormal), uLightVec);
     vVertexColor = aVertexColor;
 }
 ";
