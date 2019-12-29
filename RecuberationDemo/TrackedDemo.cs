@@ -238,7 +238,10 @@ namespace HexTex.Recuberation {
             if(earth != null) {
                 DrawMesh(earth.Mesh, true);
                 foreach(var controller in earth.Controllers) {
-                    controller.ReadLocation(_uOrigin, _uAngles);
+                    float[] mat = new float[12];
+                    controller.ReadLocation3x4(mat);
+                    _uAngles.Set(mat, 0, 9);
+                    _uOrigin.Set(mat, 9, 3);
                     SetColorIndex(controller.Color);
                     DrawMesh(objCube, false);
                 }

@@ -89,7 +89,10 @@ namespace HexTex.Recuberation {
             DrawMesh(earth, true);
 
             foreach(var controller in controllers) {
-                controller.ReadLocation(_uOrigin, _uAngles);
+                float[] mat = new float[12];
+                controller.ReadLocation3x4(mat);
+                _uAngles.Set(mat, 0, 9);
+                _uOrigin.Set(mat, 9, 3);
                 SetColorIndex(controller.Color);
                 DrawMesh(cube, false);
                 controller.Advance();

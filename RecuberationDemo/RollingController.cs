@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using HexTex.OpenGL;
 
 namespace HexTex.Recuberation {
 
@@ -113,9 +112,19 @@ namespace HexTex.Recuberation {
             }
             mat = System.Numerics.Matrix4x4.Multiply(mat, System.Numerics.Matrix4x4.CreateTranslation(tvec));
         }
-        public void ReadLocation(UniformFloat position, UniformMatrix rotation) {
-            position.Set(mat.M41, mat.M42, mat.M43);
-            rotation.Set(mat.GetRotationMatrixAsArray());
+        public void ReadLocation3x4(float[] m) {
+            m[0] = mat.M11;
+            m[1] = mat.M12;
+            m[2] = mat.M13;
+            m[3] = mat.M21;
+            m[4] = mat.M22;
+            m[5] = mat.M23;
+            m[6] = mat.M31;
+            m[7] = mat.M32;
+            m[8] = mat.M33;
+            m[9] = mat.M41;
+            m[10] = mat.M42;
+            m[11] = mat.M43;
         }
         private void ReAnimate() {
             //TODO: mark quad occupation and check if it is not occupied
