@@ -64,6 +64,7 @@
     <Compile Include="DemoMB2.cs" />
     <Compile Include="DemoTest1.cs" />
     <Compile Include="DemoTitle.cs" />
+    <Compile Include="DemoWalker.cs" />
     <Compile Include="Facade.cs" />
     <Compile Include="Generators\Volumes.cs" />
     <Compile Include="Helper.cs" />

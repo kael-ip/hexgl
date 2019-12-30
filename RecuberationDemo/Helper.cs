@@ -125,6 +125,8 @@ namespace HexTex.Recuberation {
         public abstract void Redraw(IGL gl);
         public virtual void SetViewportSize(Size size) { }
         public virtual void OnMouseMove(Point point, bool leftButtonPressed, bool rightButtonPressed) { }
+        public virtual void OnKeyDown(System.Windows.Forms.KeyEventArgs e) { }
+        public virtual void OnKeyUp(System.Windows.Forms.KeyEventArgs e) { }
     }
 
     class Mesh {
