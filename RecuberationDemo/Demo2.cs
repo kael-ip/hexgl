@@ -9,7 +9,7 @@ using HexTex.Recuberation.Generators;
 
 namespace HexTex.Recuberation {
 
-    class Demo2 : SimpleDemoBase2 {
+    class Demo2 : FacadeDemoBase {
         Mesh earth;
         Mesh cube;
         List<RollingController> controllers;
@@ -26,11 +26,7 @@ namespace HexTex.Recuberation {
             quadMap.Build(volume);
             var quads = quadMap.Quads;
             Trace.TraceInformation("Quads count = {0}", quads.Count);
-            try {
-                ;//Trace.TraceInformation("Quad groups = {0}", quadMap.CheckConnectivity());
-            } catch(Exception ex) {
-                Trace.TraceError(ex.Message);
-            }
+            Trace.TraceInformation("Quad groups = {0}", quadMap.CheckConnectivity());
             Mesh mesh = new Mesh(4, quads.Count, true, false);
             int i = 0;
             foreach(var quad in quads) {
@@ -61,42 +57,33 @@ namespace HexTex.Recuberation {
             Mesh mesh = new QMesh(quads);
             return mesh;
         }
-        protected override void RedrawCore(IGL gl) {
-            //_uPerspective.Set(matProjection);
-            //_uLightVec.Set(iq3, -iq3, iq3);
-            _uLightVec.Set(0, 0, 1);
-            //_uViewOrigin.Set(0, 0, 500f);
-            _uViewOrigin.Set(0, 0, 0);
-            //_uViewOrigin.Set(mousePosition.X - viewportSize.Width / 2, mousePosition.Y - viewportSize.Height, 500f);
-            float[] angles = new float[] { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
-            _uAngles.Set(angles);
-            _uViewAngles.Set(angles);
+        static float[] unitZ = new float[] { 0, 0, 1 };
+        static float[] identity = new float[] { 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 };
+        protected override void OnPaint(Facade g) {
+            g.SetLightVector(unitZ);
 
             var dt = DateTime.Now;
             double tRotation = Math.PI * 2 * ((0.001 * dt.Millisecond) + dt.Second) / 60;
-            {
-                System.Numerics.Matrix4x4 vmat = System.Numerics.Matrix4x4.Identity;
-                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(-5, -5, 0));
-                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationZ((float)tRotation));
-                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationX((float)(-Math.PI / 2 * 0.66)));
-                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(0, 0, -10f));
-                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreatePerspectiveOffCenter(-hheight * aspect, hheight * aspect, -hheight, hheight, clipNear, clipFar));
-                _uPerspective.Set(vmat.ToArray());
-            }
+            System.Numerics.Matrix4x4 vmat = System.Numerics.Matrix4x4.Identity;
+            vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(5f, 5f, 0));
+            vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationZ((float)tRotation));
+            vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationX((float)(-Math.PI / 2 * 0.66)));
+            vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(0, 0, 10f));
+            var amat = vmat.ToMatrix3x4Array();
+            g.SetCamMatrix(amat);
 
-            //GLMath.Rotate3(angles, tRotation, 0, 0, 1);
-            _uOrigin.Set(0, 0, 0);
-            //_uObject.Set(System.Numerics.Matrix4x4.Identity.ToArray());
-            SetColorIndex(0);
-            DrawMesh(earth, true);
+            g.SetProjection(3f, 1000f);
+
+            g.SetObjMatrix(identity);
+            g.SetColorIndex(0);
+            g.DrawMesh(earth, true);
 
             foreach(var controller in controllers) {
                 float[] mat = new float[12];
                 controller.ReadLocation3x4(mat);
-                _uAngles.Set(mat, 0, 9);
-                _uOrigin.Set(mat, 9, 3);
-                SetColorIndex(controller.Color);
-                DrawMesh(cube, false);
+                g.SetObjMatrix(mat);
+                g.SetColorIndex(controller.Color);
+                g.DrawMesh(cube, false);
                 controller.Advance();
             }
         }

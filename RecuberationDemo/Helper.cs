@@ -79,6 +79,22 @@ namespace HexTex.Recuberation {
             a[8] = m.M33;
             return a;
         }
+        public static float[] ToMatrix3x4Array(this System.Numerics.Matrix4x4 m) {
+            var a = new float[12];
+            a[0] = m.M11;
+            a[1] = m.M12;
+            a[2] = m.M13;
+            a[3] = m.M21;
+            a[4] = m.M22;
+            a[5] = m.M23;
+            a[6] = m.M31;
+            a[7] = m.M32;
+            a[8] = m.M33;
+            a[9] = m.M41;
+            a[10] = m.M42;
+            a[11] = m.M43;
+            return a;
+        }
     }
 
     class DemoHelper {
