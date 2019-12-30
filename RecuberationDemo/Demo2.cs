@@ -57,6 +57,7 @@ namespace HexTex.Recuberation {
             Mesh mesh = new QMesh(quads);
             return mesh;
         }
+
         static float[] unitZ = new float[] { 0, 0, 1 };
         static float[] identity = new float[] { 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 };
         protected override void OnPaint(Facade g) {
