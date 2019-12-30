@@ -112,6 +112,7 @@ namespace HexTex.Recuberation {
         Mesh bullet;
         double tRotation;
         float speed1;
+        float clipNear = 3f, clipFar = 1000f;
         float camz, camRotZ, camRotX;
         float[] camPos = new float[3];
         float[] lightVec = new float[3];
@@ -123,41 +124,34 @@ namespace HexTex.Recuberation {
             repository = new Repository();
             repository.Init();
         }
-        protected override void RedrawCore(IGL gl) {
-            _uLightVec.Set(lightVec);
-            _uViewOrigin.Set(0, 0, 0);
-            _uViewAngles.Set(identityMat, 0, 9);
-
-            var projection = GLMath.Frustum(-hheight * aspect, hheight * aspect, -hheight, hheight, clipNear, clipFar);
-            _uPerspective.Set(projection);
+        protected override void OnPaint(Facade g) {
+            g.SetLightVector(lightVec);
 
             System.Numerics.Matrix4x4 vmat = System.Numerics.Matrix4x4.Identity;
-            vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(0, 0, -camz));
-            vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationX(-camRotX));
-            vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationZ(-camRotZ));
             vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(-camPos[0], -camPos[1], -camPos[2]));
-            var amat = System.Numerics.Matrix4x4.Transpose(vmat).GetRotationMatrixAsArray();
-            _uViewAngles.Set(amat, 0, 9);
-            var omat = vmat.ToArray();
-            _uViewOrigin.Set(omat, 12, 3);
+            vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationZ(-camRotZ));
+            vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationX(camRotX));
+            vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(0, 0, -camz));
+            var amat = vmat.ToMatrix3x4Array();
+            g.SetCamMatrix(amat);
 
-            _uAngles.Set(objMat, 0, 9);
-            _uOrigin.Set(objMat, 9, 3);
+            g.SetProjection(clipNear, clipFar);
 
-            SetColorIndex(0);
+
+            g.SetObjMatrix(objMat);
+            g.SetColorIndex(0);
             if(earth != null) {
-                DrawMesh(earth.Mesh, true);
+                g.DrawMesh(earth.Mesh, true);
                 foreach(var controller in earth.Controllers) {
                     float[] mat = new float[12];
                     controller.ReadLocation3x4(mat);
-                    _uAngles.Set(mat, 0, 9);
-                    _uOrigin.Set(mat, 9, 3);
-                    SetColorIndex(controller.Color);
-                    DrawMesh(repository.objCube, false);
+                    g.SetObjMatrix(mat);
+                    g.SetColorIndex(controller.Color);
+                    g.DrawMesh(repository.objCube, false);
                 }
             }
             if(bullet != null) {
-                DrawMesh(bullet, false);
+                g.DrawMesh(bullet, false);
             }
         }
         private void SetObjMatIdentity() {
