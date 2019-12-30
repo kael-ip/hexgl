@@ -16,7 +16,7 @@ namespace HexTex.Recuberation {
             tracker.Add(new Tracker.CommandLabel());
             tracker.Add(new Tracker.CommandCall(t => {
                 earth = null;
-                bullet = objBanner;
+                bullet = repository.objBanner;
                 camz = -10f;
                 lightVec[0] = 0;
                 lightVec[1] = 0;
@@ -35,7 +35,7 @@ namespace HexTex.Recuberation {
                 t.FrameHandler = null;
             }));
             tracker.Add(new Tracker.CommandCall(t => {
-                earth = sysPlane;
+                earth = repository.sysPlane;
                 camz = -10f;
                 lightVec[0] = 0;
                 lightVec[1] = 0;
@@ -54,7 +54,7 @@ namespace HexTex.Recuberation {
                 camPos[2] = 0;
             }));
             tracker.Add(new Tracker.CommandCall(t => {
-                earth = sysCube1;
+                earth = repository.sysCube1;
                 camz = -10f;
                 lightVec[0] = 0;
                 lightVec[1] = 0;
@@ -65,7 +65,7 @@ namespace HexTex.Recuberation {
             }));
             tracker.Add(new Tracker.CommandDelay(64));
             tracker.Add(new Tracker.CommandCall(t => {
-                earth = sysSphere3;
+                earth = repository.sysSphere3;
                 camz = -10f;
                 speed1 = 1;
                 frame0 = t.Frame;
@@ -73,7 +73,7 @@ namespace HexTex.Recuberation {
             }));
             tracker.Add(new Tracker.CommandDelay(64));
             tracker.Add(new Tracker.CommandCall(t => {
-                earth = sysMetaBall4;
+                earth = repository.sysMetaBall4;
                 camz = -12f;
                 speed1 = -3;
                 frame0 = t.Frame;
@@ -81,7 +81,7 @@ namespace HexTex.Recuberation {
             }));
             tracker.Add(new Tracker.CommandDelay(64));
             tracker.Add(new Tracker.CommandCall(t => {
-                earth = sysMetaBall2;
+                earth = repository.sysMetaBall2;
                 camz = -10f;
                 speed1 = 3;
                 frame0 = t.Frame;
@@ -89,7 +89,7 @@ namespace HexTex.Recuberation {
             }));
             tracker.Add(new Tracker.CommandDelay(64));
             tracker.Add(new Tracker.CommandCall(t => {
-                earth = sysSphereInside;
+                earth = repository.sysSphereInside;
                 camz = -6f;
                 speed1 = -1f / 16;
                 frame0 = t.Frame;
@@ -105,14 +105,7 @@ namespace HexTex.Recuberation {
 
         // preloaded:
         static float q3 = (float)Math.Sqrt(3);
-        WalkingSystem sysCube1;
-        WalkingSystem sysSphere3;
-        WalkingSystem sysSphereInside;
-        WalkingSystem sysPlane;
-        WalkingSystem sysMetaBall4;
-        WalkingSystem sysMetaBall2;
-        Mesh objCube;
-        Mesh objBanner;
+        Repository repository;
 
         // runtime:
         WalkingSystem earth;
@@ -127,95 +120,8 @@ namespace HexTex.Recuberation {
         int frame0;
 
         protected override void Init() {
-            objCube = CreateCube();
-            objBanner = CreateBanner();
-            sysCube1 = CreateEarthCube();
-            sysSphere3 = CreateEarthSphere3();
-            sysPlane = CreateEarthPlane();
-            sysSphereInside = CreateEarthSphereInside();
-            sysMetaBall4 = CreateEarthMB4();
-            sysMetaBall2 = CreateEarthMB2();
-        }
-        private Mesh CreateCube() {
-            QuadMap quadMap = new QuadMap();
-            quadMap.BuildCube();
-            var quads = quadMap.Quads;
-            Mesh mesh = new Mesh(4, quads.Count, true, false);
-            int i = 0;
-            foreach(var quad in quads) {
-                i = quad.FillQuadVerts(mesh.VertexBuffer, mesh.NormalBuffer, i);
-            }
-            return mesh;
-        }
-        private Mesh CreateBanner() {
-            QuadMap quadMap = new QuadMap();
-            int[] data = new int[DemoData.Banner1.Length];
-            var rnd = new PRNG();
-            for(var i = 0; i < data.Length; i++) {
-                data[i] = DemoData.Banner1[i] * (rnd.Next(12) + 1);
-            }
-            quadMap.BuildHeightPlane(data, 32, 17, 0, true);
-            var quads = quadMap.Quads;
-            Trace.TraceInformation("Quads count = {0}", quads.Count);
-            Mesh mesh = new QMesh(quads);
-            return mesh;
-        }
-        private WalkingSystem CreateEarthPlane() {
-            QuadMap quadMap = new QuadMap();
-            quadMap.BuildPlane(10, 10);
-            var system = new WalkingSystem(quadMap);
-            system.AddRandomWalkers(10, 657, 32, 4, 5);
-            return system;
-        }
-        private WalkingSystem CreateEarthCube() {
-            var volume = new SphereVolume(0, 0, 0, 0.8f);
-            QuadMap quadMap = new QuadMap();
-            quadMap.Build(volume);
-            var system = new WalkingSystem(quadMap);
-            system.AddRandomWalkers(1, 1432, 32, 0);
-            return system;
-        }
-        private WalkingSystem CreateEarthSphere3() {
-            var volume = new SphereVolume(0, 0, 0, 3.3f);
-            QuadMap quadMap = new QuadMap();
-            quadMap.Build(volume);
-            var system = new WalkingSystem(quadMap);
-            system.AddRandomWalkers(7, 8465, 64, 8, 5);
-            return system;
-        }
-        private WalkingSystem CreateEarthSphereInside() {
-            var volume = new SphereVolume(0, 0, 0, 7.8f, true);
-            QuadMap quadMap = new QuadMap();
-            quadMap.Build(volume);
-            var system = new WalkingSystem(quadMap);
-            system.AddRandomWalkers(37, 8465, 64, 16, 6);
-            return system;
-        }
-        private WalkingSystem CreateEarthMB4() {
-            //var volume = new MetaballVolume(new Bounds3D(-10, 10, -10, 10, -10, 10), 1.2f);
-            //volume.AddBall(-2, 0, 1, 5.3f);
-            //volume.AddBall(1, -4, 3, -1.3f);
-            //volume.AddBall(3, 3, -2, 2.4f);
-            var volume = new MetaballVolume(new Bounds3D(-10, 10, -10, 10, -10, 10), 1.2f);
-            volume.AddBall(-3, 2, -3, 2.3f);
-            volume.AddBall(3, 2, 3, 2.3f);
-            volume.AddBall(2, -2, -2, 2.3f);
-            volume.AddBall(-2, -2, 2, 2.3f);
-            QuadMap quadMap = new QuadMap();
-            quadMap.Build(volume);
-            var system = new WalkingSystem(quadMap);
-            system.AddRandomWalkers(9, 2020, 64, 4, 5);
-            return system;
-        }
-        private WalkingSystem CreateEarthMB2() {
-            var volume = new MetaballVolume(new Bounds3D(-10, 10, -10, 10, -10, 10), 1.2f);
-            volume.AddBall(3, 3, 1, 2.5f);
-            volume.AddBall(-2, -1, -2, 3.4f);
-            QuadMap quadMap = new QuadMap();
-            quadMap.Build(volume);
-            var system = new WalkingSystem(quadMap);
-            system.AddRandomWalkers(9, 6345, 64, 8, 4);
-            return system;
+            repository = new Repository();
+            repository.Init();
         }
         protected override void RedrawCore(IGL gl) {
             _uLightVec.Set(lightVec);
@@ -247,7 +153,7 @@ namespace HexTex.Recuberation {
                     _uAngles.Set(mat, 0, 9);
                     _uOrigin.Set(mat, 9, 3);
                     SetColorIndex(controller.Color);
-                    DrawMesh(objCube, false);
+                    DrawMesh(repository.objCube, false);
                 }
             }
             if(bullet != null) {
