@@ -16,6 +16,23 @@ namespace HexTex.Recuberation {
             tracker.Add(new Tracker.CommandLabel());
             tracker.Add(new Tracker.CommandCall(t => {
                 earth = null;
+                bullet = objBanner2;
+                camz = -10f;
+                lightVec[0] = 0;
+                lightVec[1] = 0;
+                lightVec[2] = 1f;
+                camPos[0] = 0;
+                camPos[1] = 0;
+                camPos[2] = 0;
+                bsize[0] = 64;
+                bsize[1] = 32;
+                speed1 = 1;
+                frame0 = t.Frame;
+                t.FrameHandler = OnFrame_UpdateStateV4;
+            }));
+            tracker.Add(new Tracker.CommandDelay(64));
+            tracker.Add(new Tracker.CommandCall(t => {
+                earth = null;
                 bullet = objBanner;
                 camz = -10f;
                 lightVec[0] = 0;
@@ -24,6 +41,8 @@ namespace HexTex.Recuberation {
                 camPos[0] = 0;
                 camPos[1] = 0;
                 camPos[2] = 0;
+                bsize[0] = 32;
+                bsize[1] = 17;
                 speed1 = 1;
                 frame0 = t.Frame;
                 t.FrameHandler = OnFrame_UpdateStateV4;
@@ -113,6 +132,7 @@ namespace HexTex.Recuberation {
         WalkingSystem sysMetaBall2;
         Mesh objCube;
         Mesh objBanner;
+        Mesh objBanner2;
 
         // runtime:
         WalkingSystem earth;
@@ -123,12 +143,14 @@ namespace HexTex.Recuberation {
         float[] camPos = new float[3];
         float[] lightVec = new float[3];
         float[] objMat = new float[12];
+        int[] bsize = new int[2];
         float[] identityMat = new float[] { 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 };
         int frame0;
 
         protected override void Init() {
             objCube = CreateCube();
             objBanner = CreateBanner();
+            objBanner2 = CreateBanner(Properties.Resources.rcbmhm);
             sysCube1 = CreateEarthCube();
             sysSphere3 = CreateEarthSphere3();
             sysPlane = CreateEarthPlane();
@@ -158,6 +180,18 @@ namespace HexTex.Recuberation {
             var quads = quadMap.Quads;
             Trace.TraceInformation("Quads count = {0}", quads.Count);
             Mesh mesh = new QMesh(quads);
+            return mesh;
+        }
+        private QMesh CreateBanner(System.Drawing.Bitmap bitmap) {
+            var pixelMap = PixelMap.Load(bitmap);
+            QuadMap quadMap = new QuadMap();
+            var rnd = new PRNG();
+            quadMap.BuildHeightPlane(pixelMap.Width, pixelMap.Height,
+                //(x, y) => pixelMap[x, y] * (rnd.Next(12) + 1), 0, true);
+                (x, y) => pixelMap[x, y] * 32 / 256, 0, true);
+            var quads = quadMap.Quads;
+            Trace.TraceInformation("Quads count = {0}", quads.Count);
+            QMesh mesh = new QMesh(quads);
             return mesh;
         }
         private WalkingSystem CreateEarthPlane() {
@@ -293,14 +327,15 @@ namespace HexTex.Recuberation {
             double tt = tts * tts * tts * tts * tts;
             double os = Math.Sin(Math.PI * 0.5 * tt), oc = Math.Cos(Math.PI * 0.5 * tt);
             double fz = 1 - 1 / (1 + Math.Abs(tt) * 1000);
-            camz = (float)(-10 * fz - 800 * (1 - fz));
+            camz = (float)(-10 * fz - bsize[0] * 25 * (1 - fz));
             clipNear = (float)(2 * fz + 160 * (1 - fz));
+            clipFar = 10000f;
             camRotZ = 0;
             camRotX = 0;
             GLMath.Rotate3(objMat, Math.PI * 0.5 * tt, 0, 1, 0);
-            objMat[9] = (float)(oc * -16 - 0 + os * 24);
-            objMat[10] = -9.5f;
-            objMat[11] = (float)(os * -16 - oc * 30 + 20);
+            objMat[9] = (float)(oc * -bsize[0] / 2 - 0 + os * 24);
+            objMat[10] = -bsize[1] / 2 - 1;
+            objMat[11] = (float)(os * -bsize[0] / 2 - oc * 30 + 20);
         }
     }
 }

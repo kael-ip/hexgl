@@ -59,5 +59,15 @@ namespace HexTex.Recuberation.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap rcbmhm {
+            get {
+                object obj = ResourceManager.GetObject("rcbmhm", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }

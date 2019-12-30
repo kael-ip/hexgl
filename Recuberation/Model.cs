@@ -293,9 +293,12 @@ namespace HexTex.Recuberation {
             quad1.SetEdge(dir1Axis, dir1Neg, edge);
         }
         public void BuildHeightPlane(int[] map, int xsize, int ysize, int maskLevel, bool invy) {
+            BuildHeightPlane(xsize, ysize, (x, y) => map[x + y * xsize], maskLevel, invy);
+        }
+        public void BuildHeightPlane(int xsize, int ysize, Func<int,int,int> source, int maskLevel, bool invy) {
             for(int y = 0; y < ysize; y++) {
                 for(int x = 0; x < xsize; x++) {
-                    var v = map[x + y * xsize];
+                    var v = source(x, y);
                     if(v != maskLevel) {
                         var yy = invy ? ysize - y : y;
                         var quad = AddQuad(Axis.Z, false, v, x, yy);
