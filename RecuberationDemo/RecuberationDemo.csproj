@@ -52,16 +52,10 @@
   <ItemGroup>
     <Compile Include="Animatron.cs" />
     <Compile Include="Demo1.cs" />
-    <Compile Include="Demo2.cs" />
-    <Compile Include="Demo3.cs" />
-    <Compile Include="Demo4.cs" />
-    <Compile Include="Demo5.cs" />
     <Compile Include="DemoData.cs" />
     <Compile Include="DemoForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DemoMB.cs" />
-    <Compile Include="DemoMB2.cs" />
     <Compile Include="DemoTest1.cs" />
     <Compile Include="DemoTitle.cs" />
     <Compile Include="DemoWalker.cs" />
