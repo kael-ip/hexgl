@@ -16,7 +16,7 @@ namespace HexTex.Recuberation {
             tracker.Add(new Tracker.CommandLabel());
             tracker.Add(new Tracker.CommandCall(t => {
                 earth = null;
-                bullet = objBanner2;
+                bullet = repository.objBannerMhm;
                 camz = -10f;
                 lightVec[0] = 0;
                 lightVec[1] = 0;
@@ -124,7 +124,6 @@ namespace HexTex.Recuberation {
 
         // preloaded:
         static float q3 = (float)Math.Sqrt(3);
-        Mesh objBanner2;
         Repository repository;
 
         // runtime:
@@ -144,19 +143,6 @@ namespace HexTex.Recuberation {
         protected override void Init() {
             repository = new Repository();
             repository.Init();
-            objBanner2 = CreateBanner(Properties.Resources.rcbmhm);
-        }
-        private QMesh CreateBanner(System.Drawing.Bitmap bitmap) {
-            var pixelMap = PixelMap.Load(bitmap);
-            QuadMap quadMap = new QuadMap();
-            var rnd = new PRNG();
-            quadMap.BuildHeightPlane(pixelMap.Width, pixelMap.Height,
-                //(x, y) => pixelMap[x, y] * (rnd.Next(12) + 1), 0, true);
-                (x, y) => pixelMap[x, y] * 32 / 256, 0, true);
-            var quads = quadMap.Quads;
-            Trace.TraceInformation("Quads count = {0}", quads.Count);
-            QMesh mesh = new QMesh(quads);
-            return mesh;
         }
         protected override void OnPaint(Facade g) {
             g.SetLightVector(lightVec);

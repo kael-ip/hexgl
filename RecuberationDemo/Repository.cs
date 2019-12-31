@@ -23,10 +23,12 @@ namespace HexTex.Recuberation {
         public WalkingSystem sysMetaBall2;
         public Mesh objCube;
         public Mesh objBanner;
+        public Mesh objBannerMhm;
 
         public void Init() {
             objCube = CreateCube();
             objBanner = CreateBanner();
+            objBannerMhm = CreateBanner(Properties.Resources.rcbmhm);
             sysCube1 = CreateEarthCube();
             sysSphere3 = CreateEarthSphere3();
             sysPlane = CreateEarthPlane();
@@ -56,6 +58,16 @@ namespace HexTex.Recuberation {
             var quads = quadMap.Quads;
             Trace.TraceInformation("Quads count = {0}", quads.Count);
             Mesh mesh = new QMesh(quads);
+            return mesh;
+        }
+        private QMesh CreateBanner(System.Drawing.Bitmap bitmap) {
+            var pixelMap = PixelMap.Load(bitmap);
+            QuadMap quadMap = new QuadMap();
+            quadMap.BuildHeightPlane(pixelMap.Width, pixelMap.Height,
+                (x, y) => pixelMap[x, y] * 32 / 256, 0, true);
+            var quads = quadMap.Quads;
+            Trace.TraceInformation("Quads count = {0}", quads.Count);
+            QMesh mesh = new QMesh(quads);
             return mesh;
         }
         private WalkingSystem CreateEarthPlane() {
