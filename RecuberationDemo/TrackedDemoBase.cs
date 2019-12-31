@@ -8,7 +8,7 @@ using HexTex.OpenGL;
 
 namespace HexTex.Recuberation {
 
-    abstract class TrackedDemoBase : SimpleDemoBase2 {
+    abstract class TrackedDemoBase : FacadeDemoBase {
         Stopwatch stopWatch;
         long trackerTime = 0;
         int trackerFrameSpan = 20; // 20ms --> 50Hz

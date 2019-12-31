@@ -69,6 +69,14 @@ namespace HexTex.Recuberation {
             base.OnMouseMove(e);
             demo.OnMouseMove(e.Location, (e.Button & System.Windows.Forms.MouseButtons.Left) != 0, (e.Button & System.Windows.Forms.MouseButtons.Right) != 0);
         }
+        protected override void OnKeyDown(KeyEventArgs e) {
+            base.OnKeyDown(e);
+            demo.OnKeyDown(e);
+        }
+        protected override void OnKeyUp(KeyEventArgs e) {
+            base.OnKeyUp(e);
+            demo.OnKeyUp(e);
+        }
         public static string GetString(IGL gl, uint name) {
             IntPtr ptr = gl.GetString(name);
             return System.Runtime.InteropServices.Marshal.PtrToStringAnsi(ptr);
