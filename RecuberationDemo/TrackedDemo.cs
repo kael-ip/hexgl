@@ -28,9 +28,9 @@ namespace HexTex.Recuberation {
                 bsize[1] = 32;
                 speed1 = 1;
                 frame0 = t.Frame;
-                t.FrameHandler = OnFrame_UpdateStateV4;
+                t.FrameHandler = OnFrame_UpdateStateV5;
             }));
-            tracker.Add(new Tracker.CommandDelay(64));
+            tracker.Add(new Tracker.CommandDelay(64*2));
             tracker.Add(new Tracker.CommandCall(t => {
                 earth = null;
                 bullet = objBanner;
@@ -336,6 +336,24 @@ namespace HexTex.Recuberation {
             objMat[9] = (float)(oc * -bsize[0] / 2 - 0 + os * 24);
             objMat[10] = -bsize[1] / 2 - 1;
             objMat[11] = (float)(os * -bsize[0] / 2 - oc * 30 + 20);
+        }
+        private void OnFrame_UpdateStateV5(Tracker tracker) {
+            double time = (tracker.Frame - frame0) * (1.0 / (64 * 2 * tracker.RowRate));
+            tRotation = Math.PI * (0.5 + time);
+            double tts = Math.Sin(tRotation);
+            double tt = tts * tts * tts; //* tts * tts;
+            Trace.TraceInformation(">>> {0} :: {1:f4}", (tracker.Frame - frame0), tt);
+            double os = Math.Sin(Math.PI * 0.5 * tt), oc = Math.Cos(Math.PI * 0.5 * tt);
+            double fz = 1 - 1 / (1 + Math.Abs(tt) * 1000);
+            camz = (float)(-10 * fz - bsize[0] * 25 * (1 - fz));
+            clipNear = (float)(2 * fz + 160 * (1 - fz));
+            clipFar = 10000f;
+            camRotZ = 0;
+            camRotX = 0;
+            GLMath.Rotate3(objMat, Math.PI * 0.5 * tt, 1, 0, 0);
+            objMat[9] = (float)(-bsize[0] / 2);
+            objMat[10] = (float)(-bsize[1] / 2 - 1 - (oc - 1) * 32);
+            objMat[11] = (float)(-20);
         }
     }
 }
