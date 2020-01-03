@@ -27,8 +27,8 @@ namespace HexTex.Recuberation {
             tracker.Add(new Tracker.CommandDelay(64));
             tracker.Add(new Tracker.CommandCall(t => {
                 scene = new WalkerScene(repository.sysPlane, 1f / 8, 64 * t.RowRate, false);
-                scene.camPos[0] = -5f;
-                scene.camPos[1] = -5f;
+                scene.camPos[0] = 5f;
+                scene.camPos[1] = 5f;
                 scene.camPos[2] = 0;
                 frame0 = t.Frame;
             }));
@@ -45,7 +45,7 @@ namespace HexTex.Recuberation {
             tracker.Add(new Tracker.CommandDelay(64));
             tracker.Add(new Tracker.CommandCall(t => {
                 scene = new WalkerScene(repository.sysMetaBall4, -3, 64 * t.RowRate, true);
-                scene.camz = -12f;
+                scene.camz = 12f;
                 frame0 = t.Frame;
             }));
             tracker.Add(new Tracker.CommandDelay(64));
@@ -56,7 +56,7 @@ namespace HexTex.Recuberation {
             tracker.Add(new Tracker.CommandDelay(64));
             tracker.Add(new Tracker.CommandCall(t => {
                 scene = new WalkerScene(repository.sysSphereInside, -1f / 16, 64 * t.RowRate, true);
-                scene.camz = -6f;
+                scene.camz = 6f;
                 frame0 = t.Frame;
             }));
             tracker.Add(new Tracker.CommandDelay(64));

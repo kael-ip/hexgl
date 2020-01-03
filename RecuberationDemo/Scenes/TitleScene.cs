@@ -17,7 +17,7 @@ namespace HexTex.Recuberation.Scenes {
             this.sizex = sizex;
             this.sizey = sizey;
             this.period = period;
-            camz = -10f;
+            camz = 10f;
             lightVec[0] = 0;
             lightVec[1] = 0;
             lightVec[2] = 1f;
@@ -45,7 +45,7 @@ namespace HexTex.Recuberation.Scenes {
             Trace.TraceInformation(">>> {0} :: {1:f4}", frame, tt);
             double os = Math.Sin(Math.PI * 0.5 * tt), oc = Math.Cos(Math.PI * 0.5 * tt);
             double fz = 1 - 1 / (1 + Math.Abs(tt) * 1000);
-            camz = (float)(-10 * fz - sizex * 25 * (1 - fz));
+            camz = (float)(10 * fz + sizex * 25 * (1 - fz));
             clipNear = (float)(2 * fz + 160 * (1 - fz));
             clipFar = 10000f;
             camRotZ = 0;
@@ -69,7 +69,7 @@ namespace HexTex.Recuberation.Scenes {
             double tt = tts * tts * tts * tts * tts;
             double os = Math.Sin(Math.PI * 0.5 * tt), oc = Math.Cos(Math.PI * 0.5 * tt);
             double fz = 1 - 1 / (1 + Math.Abs(tt) * 1000);
-            camz = (float)(-10 * fz - sizex * 25 * (1 - fz));
+            camz = (float)(10 * fz + sizex * 25 * (1 - fz));
             clipNear = (float)(2 * fz + 160 * (1 - fz));
             clipFar = 10000f;
             camRotZ = 0;

@@ -23,7 +23,7 @@ namespace HexTex.Recuberation.Scenes {
             camPos[0] = 0;
             camPos[1] = 0;
             camPos[2] = 0;
-            camz = -10f;
+            camz = 10f;
             clipNear = 3f;
             this.objCube = Repository.Instance.objCube;
         }
