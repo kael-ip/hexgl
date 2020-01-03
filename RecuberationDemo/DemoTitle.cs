@@ -79,7 +79,7 @@ namespace HexTex.Recuberation {
                 _uPerspective.Set(vmat.ToArray());
             }
 
-            GLMath.Rotate3(angles, Math.PI * 0.5 * tt, 0, 1, 0);
+            GLMath.Rotate3(angles, -Math.PI * 0.5 * tt, 0, 1, 0);
             //GLMath.Rotate3(angles, Math.PI * 0.5 * 0.9, 0, 1, 0);
             _uAngles.Set(angles);
             //GLMath.Rotate3(angles, tRotation, 0, 0, 1);

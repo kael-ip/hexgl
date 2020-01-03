@@ -50,7 +50,7 @@ namespace HexTex.Recuberation.Scenes {
             clipFar = 10000f;
             camRotZ = 0;
             camRotX = 0;
-            GLMath.Rotate3(objMat, Math.PI * 0.5 * tt, 1, 0, 0);
+            GLMath.Rotate3(objMat, -Math.PI * 0.5 * tt, 1, 0, 0);
             objMat[9] = (float)(-sizex / 2);
             objMat[10] = (float)(-sizey / 2 - 1 - (oc - 1) * 32);
             objMat[11] = (float)(-20);
@@ -74,7 +74,7 @@ namespace HexTex.Recuberation.Scenes {
             clipFar = 10000f;
             camRotZ = 0;
             camRotX = 0;
-            GLMath.Rotate3(objMat, Math.PI * 0.5 * tt, 0, 1, 0);
+            GLMath.Rotate3(objMat, -Math.PI * 0.5 * tt, 0, 1, 0);
             objMat[9] = (float)(oc * -sizex / 2 - 0 + os * 24);
             objMat[10] = -sizey / 2 - 1;
             objMat[11] = (float)(os * -sizex / 2 - oc * 30 + 20);

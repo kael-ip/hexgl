@@ -48,7 +48,7 @@ namespace HexTex.Recuberation {
 
             var dt = DateTime.Now;
             double tRotation = Math.PI * 2 * ((0.001 * dt.Millisecond) + dt.Second) / 60;
-            GLMath.Rotate3(angles, tRotation, 0, iq2, iq2);
+            GLMath.Rotate3(angles, -tRotation, 0, iq2, iq2);
             _uAngles.Set(angles);
 
             _uOrigin.Set(-5, -3, -7);
