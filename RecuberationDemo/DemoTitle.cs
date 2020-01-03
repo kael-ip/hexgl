@@ -70,13 +70,12 @@ namespace HexTex.Recuberation {
             float camz = (float)(-10 * fz - 800 * (1 - fz));
             clipNear = (float)(2 * fz + 160 * (1 - fz));
             {
-                System.Numerics.Matrix4x4 vmat = System.Numerics.Matrix4x4.Identity;
-                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(0, 0, 0));
-                //vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationZ((float)tRotation));
-                //vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationX((float)(-Math.PI / 2 * 0.66)));
-                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(0, 0, camz));
-                vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreatePerspectiveOffCenter(-hheight * aspect, hheight * aspect, -hheight, hheight, clipNear, clipFar));
-                _uPerspective.Set(vmat.ToArray());
+                float[] mat = new float[] { 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -camz };
+                _uViewAngles.Set(mat, 0, 9);
+                _uViewOrigin.Set(mat, 9, 3);
+
+                var matp = GLMath.Frustum(-hheight * aspect, hheight * aspect, -hheight, hheight, clipNear, clipFar);
+                _uPerspective.Set(matp);
             }
 
             GLMath.Rotate3(angles, -Math.PI * 0.5 * tt, 0, 1, 0);

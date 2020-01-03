@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using HexTex.OpenGL;
 
 namespace HexTex.Recuberation {
     class DemoWalker : FacadeDemoBase {
@@ -56,13 +57,17 @@ namespace HexTex.Recuberation {
             float[] lightVec = new float[] { Convert.ToSingle(q3 * 0.5f * Math.Cos(-tRotation)), Convert.ToSingle(q3 * 0.5f * Math.Sin(-tRotation)), 0.5f };
             g.SetLightVector(lightVec);
 
-            System.Numerics.Matrix4x4 vmat = System.Numerics.Matrix4x4.Identity;
-            vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(preset.Offset[0], preset.Offset[1], preset.Offset[2]));
-            vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationZ((float)tRotation));
-            vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateRotationX((float)(-Math.PI / 2 * 0.66)));
-            vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(0, 0, preset.BackStep));
-            var amat = vmat.ToMatrix3x4Array();
-            g.SetCamMatrix(amat);
+            float[] mat = new float[] { 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 };
+            float[] rmat = new float[12];
+            GLMath.Translate3(rmat, preset.Offset[0], preset.Offset[1], preset.Offset[2]);
+            GLMath.MatrixMultiply(mat, mat, rmat);
+            GLMath.Rotate3(rmat, (float)tRotation, 0, 0, 1);
+            GLMath.MatrixMultiply(mat, mat, rmat);
+            GLMath.Rotate3(rmat, (float)(-Math.PI / 2 * 0.66), 1, 0, 0);
+            GLMath.MatrixMultiply(mat, mat, rmat);
+            GLMath.Translate3(rmat, 0, 0, preset.BackStep);
+            GLMath.MatrixMultiply(mat, mat, rmat);
+            g.SetCamMatrix(mat);
 
             g.SetProjection(3f, 1000f);
 
@@ -71,7 +76,6 @@ namespace HexTex.Recuberation {
             g.DrawMesh(preset.System.Mesh, true);
 
             foreach(var controller in preset.System.Controllers) {
-                float[] mat = new float[12];
                 controller.ReadLocation3x4(mat);
                 g.SetObjMatrix(mat);
                 g.SetColorIndex(controller.Color);
