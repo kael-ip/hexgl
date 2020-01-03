@@ -9,6 +9,7 @@ namespace HexTex.Recuberation {
     static class App {
         static bool fullScreen = false;
         static Type[] sequence = new Type[]{
+            typeof(DemoPalette),
             typeof(TrackedDemo),
             typeof(DemoTitle),
             typeof(DemoWalker),
