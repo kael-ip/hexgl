@@ -50,7 +50,7 @@ namespace HexTex.Recuberation.Scenes {
             }
             camRotZ = tRotation;
             camRotX = (float)(-Math.PI / 2 * 0.66);
-            SetIdentity(objMat);
+            HexTex.OpenGL.GLMath.Identity3(objMat);
             earth.Advance();
         }
     }

@@ -59,20 +59,20 @@ namespace HexTex.OpenGL {
             m[10] = y;
             m[11] = z;
         }
-        public static void MatrixMultiply(float[] m, float[] b, float[] a) {
-            float t11 = a[0] * b[0] + a[3] * b[1] + a[6] * b[2];
-            float t12 = a[0] * b[3] + a[3] * b[4] + a[6] * b[5];
-            float t13 = a[0] * b[6] + a[3] * b[7] + a[6] * b[8];
-            float t21 = a[1] * b[0] + a[4] * b[1] + a[7] * b[2];
-            float t22 = a[1] * b[3] + a[4] * b[4] + a[7] * b[5];
-            float t23 = a[1] * b[6] + a[4] * b[7] + a[7] * b[8];
-            float t31 = a[2] * b[0] + a[5] * b[1] + a[8] * b[2];
-            float t32 = a[2] * b[3] + a[5] * b[4] + a[8] * b[5];
-            float t33 = a[2] * b[6] + a[5] * b[7] + a[8] * b[8];
-            if(a.Length >= 12 && b.Length >= 12 && m.Length >= 12) {
-                float t41 = b[9] * a[0] + b[10] * a[3] + b[11] * a[6] + a[9];
-                float t42 = b[9] * a[1] + b[10] * a[4] + b[11] * a[7] + a[10];
-                float t43 = b[9] * a[2] + b[10] * a[5] + b[11] * a[8] + a[11];
+        public static void MatrixMultiply(float[] m, float[] a, float[] b) {
+            float t11 = b[0] * a[0] + b[3] * a[1] + b[6] * a[2];
+            float t12 = b[0] * a[3] + b[3] * a[4] + b[6] * a[5];
+            float t13 = b[0] * a[6] + b[3] * a[7] + b[6] * a[8];
+            float t21 = b[1] * a[0] + b[4] * a[1] + b[7] * a[2];
+            float t22 = b[1] * a[3] + b[4] * a[4] + b[7] * a[5];
+            float t23 = b[1] * a[6] + b[4] * a[7] + b[7] * a[8];
+            float t31 = b[2] * a[0] + b[5] * a[1] + b[8] * a[2];
+            float t32 = b[2] * a[3] + b[5] * a[4] + b[8] * a[5];
+            float t33 = b[2] * a[6] + b[5] * a[7] + b[8] * a[8];
+            if(b.Length == 12 && a.Length == 12 && m.Length == 12) {
+                float t41 = a[9] * b[0] + a[10] * b[3] + a[11] * b[6] + b[9];
+                float t42 = a[9] * b[1] + a[10] * b[4] + a[11] * b[7] + b[10];
+                float t43 = a[9] * b[2] + a[10] * b[5] + a[11] * b[8] + b[11];
                 m[9] = t41;
                 m[10] = t42;
                 m[11] = t43;
@@ -86,6 +86,22 @@ namespace HexTex.OpenGL {
             m[6] = t13;
             m[7] = t23;
             m[8] = t33;
+        }
+        public static void Identity3(float[] m) {
+            m[0] = 1;
+            m[1] = 0;
+            m[2] = 0;
+            m[3] = 0;
+            m[4] = 1;
+            m[5] = 0;
+            m[6] = 0;
+            m[7] = 0;
+            m[8] = 1;
+            if(m.Length == 12) {
+                m[9] = 0;
+                m[10] = 0;
+                m[11] = 0;
+            }
         }
     }
 }

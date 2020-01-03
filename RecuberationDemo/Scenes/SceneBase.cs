@@ -13,13 +13,6 @@ namespace HexTex.Recuberation.Scenes {
         public float[] lightVec = new float[3];
         public float[] objMat = new float[12];
         public float clipNear = 10f, clipFar = 1000f;
-        public float[] identityMat = new float[] { 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 };
-        protected void SetIdentity(float[] mat) {
-            Array.Copy(identityMat, mat, 9);
-            mat[9] = 0;
-            mat[10] = 0;
-            mat[11] = 0;
-        }
 
         public virtual void Update(int frame) { }
         public virtual void Render(Facade g) {
