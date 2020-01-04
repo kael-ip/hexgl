@@ -8,22 +8,31 @@ namespace HexTex.Recuberation {
     class Palette {
         int length;
         int shades;
-        int usedColors;
-        byte[] palette;
+        List<byte[]> palette;
         byte[] lightTable;
         private Palette(int length, int shades) {
             this.length = length;
             this.shades = shades;
-            palette = new byte[length * 3];
-            this.usedColors = 0;
+            palette = new List<byte[]>();
+        }
+        private int AddColor(byte r, byte g, byte b) {
+            palette.Add(new byte[] { r, g, b });
+            return palette.Count - 1;
+        }
+        private int AddColor(uint color) {
+            byte r, g, b;
+            UnpackColor(color, out r, out g, out b);
+            return AddColor(r, g, b);
         }
         public uint[] GetPalette() {
             uint[] data = new uint[length];
-            for(int i = 0, j = 0; i < length; i++) {
-                byte r = palette[j++];
-                byte g = palette[j++];
-                byte b = palette[j++];
-                data[i] = PackColor(r, g, b);
+            for(int i = 0; i < length; i++) {
+                if(i < palette.Count) {
+                    var c = palette[i];
+                    data[i] = PackColor(c[0], c[1], c[2]);
+                } else {
+                    data[i] = 0;
+                }
             }
             return data;
         }
@@ -36,6 +45,12 @@ namespace HexTex.Recuberation {
         public static uint PackColor(byte r, byte g, byte b) {
             return (uint)(0xff000000 | ((uint)b << 16) | ((uint)g << 8) | ((uint)r << 0));
         }
+        public static void UnpackColor(uint color, byte[] rgb) {
+            for(int i = 0; i < 3; i++) {
+                rgb[i] = (byte)(color & 255);
+                color = color >> 8;
+            }
+        }
         public static void UnpackColor(uint color, out byte r, out byte g, out byte b) {
             r = (byte)((color >> 0) & 255);
             g = (byte)((color >> 8) & 255);
@@ -47,16 +62,17 @@ namespace HexTex.Recuberation {
             b = (((int)color >> 16) & 255) * n / d;
         }
         public void CreateGradient(uint color, int n) {
-            if(this.length - usedColors < n)
+            if(this.length - palette.Count < n)
                 throw new ArgumentOutOfRangeException();
-            byte r, g, b;
-            UnpackColor(color, out r, out g, out b);
-            for(int i = 0, j = usedColors * 3; i < n; i++) {
-                palette[j++] = Scale(r, n - i - 1, n - 1);
-                palette[j++] = Scale(g, n - i - 1, n - 1);
-                palette[j++] = Scale(b, n - i - 1, n - 1);
+            byte[] rgb = new byte[3];
+            UnpackColor(color, rgb);
+            for(int i = 0; i < n; i++) {
+                byte[] rgbs = new byte[3];
+                for(int j = 0; j < 3; j++) {
+                    rgbs[j] = Scale(rgb[j], n - i - 1, n - 1);
+                }
+                palette.Add(rgbs);
             }
-            usedColors += n;
         }
         public static Palette CreateGradient(uint color) {
             var p = new Palette(256, 256);
@@ -118,17 +134,17 @@ namespace HexTex.Recuberation {
         };
         public static Palette Create16x16() {
             var p = new Palette(256, 256);
-            int i = 0;
+            byte[] rgb = new byte[3];
             for(var s = 0; s < 16; s++) {
                 for(var j = 0; j < 16; j++) {
-                    byte r, g, b;
-                    UnpackColor(colors[j], out r, out g, out b);
-                    p.palette[i++] = Scale(r, 15 - s, 15);
-                    p.palette[i++] = Scale(g, 15 - s, 15);
-                    p.palette[i++] = Scale(b, 15 - s, 15);
+                    UnpackColor(colors[j], rgb);
+                    byte[] rgbs = new byte[3];
+                    for(int i = 0; i < 3; i++) {
+                        rgbs[i] = Scale(rgb[i], 15 - s, 15);
+                    }
+                    p.palette.Add(rgbs);
                 }
             }
-            p.usedColors = 256;
             return p;
         }
         static byte Scale(byte c, int n, int d) {
@@ -142,36 +158,98 @@ namespace HexTex.Recuberation {
         byte[] CreateLightTable() {
             var tbl = new byte[length * shades];
             int[] color = new int[3];
-            for(int c = 0, j = 0; c < length; c++, j += 3) {
+            for(int c = 0; c < length; c++) {
                 for(int s = 0; s < shades; s++) {
-                    for(int i = 0; i < 3; i++) {
-                        color[i] = palette[j + i] * s / (shades - 1);
+                    if(c < palette.Count) {
+                        byte[] rgb = palette[c];
+                        for(int i = 0; i < 3; i++) {
+                            color[i] = rgb[i] * s / (shades - 1);
+                        }
+                        int index = FindNearestColor(color);
+                        if(index > 255)
+                            throw new InvalidOperationException();
+                        tbl[c + s * length] = (byte)index;
                     }
-                    tbl[c + s * length] = FindNearestColor(color);
                 }
             }
             return tbl;
         }
-        byte FindNearestColor(int[] c) {
+        int FindNearestColor(int[] c) {
             int bestIndex = -1;
             int dmin = int.MaxValue;
-            for(int index = 0, j = 0; index < this.length; index++) {
+            for(int index = 0; index < palette.Count; index++) {
                 int d = 0;
+                byte[] rgb = palette[index];
                 for(int i = 0; i < 3; i++) {
-                    int v = absdiff(c[i], palette[j++]);
+                    int v = absdiff(c[i], rgb[i]);
                     d += v * v;
                 }
                 if(d == 0)
-                    return (byte)index;
+                    return index;
                 if(d < dmin) {
                     dmin = d;
                     bestIndex = index;
                 }
             }
-            return (byte)bestIndex;
+            return bestIndex;
         }
         static int absdiff(int a, int b) {
             return a > b ? a - b : b - a;
+        }
+        public static Palette CreateSmart() {
+            var p = new Palette(256, 256);
+            p.AddColor(0xffffffff);
+            //p.AddColor(0xBCBCBC);
+            //NES row 1
+            p.AddColor(0x0078F8);
+            p.AddColor(0x0058F8);
+            p.AddColor(0x6844FC);
+            p.AddColor(0xD800CC);
+            p.AddColor(0xE40058);
+            p.AddColor(0xF83800);
+            p.AddColor(0xE45C10);
+            p.AddColor(0xAC7C00);
+            p.AddColor(0x00B800);
+            p.AddColor(0x00A800);
+            p.AddColor(0x00A844);
+            p.AddColor(0x008888);
+            //
+            p.AddColor(0);
+            p.AddShades(0, 64, 64);
+            for(int i = 0; i < 12; i++) {
+                p.AddShades(i + 1, 4, 24);
+                p.AddShades(p.palette.Count - 1, 4, 20);
+                p.AddShades(p.palette.Count - 1, 4, 16);
+                p.AddShades(p.palette.Count - 1, 4, 12);
+                p.AddShades(p.palette.Count - 1, 4, 8);
+            }
+            System.Diagnostics.Debug.Assert(p.palette.Count <= 256);
+            return p;
+        }
+        private void AddShades(int id, int maxshades, int numshades) {
+            for(int j = 0; j < maxshades; j++) {
+                var rgb = palette[id];
+                var rgbs = new byte[3];
+                for(int i = 0; i < 3; i++) {
+                    rgbs[i] = Scale(rgb[i], numshades - j - 1, numshades - 1);
+                }
+                var index = FindColor(rgbs);
+                if(index < 0) {
+                    palette.Add(rgbs);
+                }
+            }
+        }
+        private int FindColor(byte[] rgb) {
+            for(int j = 0; j < palette.Count; j++) {
+                var rgbp = palette[j];
+                int d = 0;
+                for(int i = 0; i < 3; i++) {
+                    d += absdiff(rgbp[i], rgb[i]);
+                }
+                if(d == 0)
+                    return j;
+            }
+            return -1;
         }
     }
 }

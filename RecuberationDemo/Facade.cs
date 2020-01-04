@@ -115,7 +115,8 @@ void main(void)
         }
         protected virtual void LoadTextures(IGL gl) {
             //var p = Palette.CreateGradient(0xffffff);
-            var p = Palette.Create16x16();
+            //var p = Palette.Create16x16();
+            var p = Palette.CreateSmart();
             uint[] palette = p.GetPalette();
             byte[] lightTable = p.GetLightTable();
             uint[] textures = new uint[3];
