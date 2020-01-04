@@ -217,20 +217,51 @@ namespace HexTex.Recuberation {
         public static Palette CreateSmart() {
             var p = new Palette(256, 256);
             p.AddColor(0xffffffff);
-            //p.AddColor(0xBCBCBC);
-            //NES row 1
-            p.AddColor(0x0078F8);
-            p.AddColor(0x0058F8);
+            //NES row 1 / tuned
+            p.AddColor(0x0068F8);
+            p.AddColor(0x0042FC);
             p.AddColor(0x6844FC);
             p.AddColor(0xD800CC);
             p.AddColor(0xE40058);
             p.AddColor(0xF83800);
             p.AddColor(0xE45C10);
             p.AddColor(0xAC7C00);
-            p.AddColor(0x00B800);
-            p.AddColor(0x00A800);
-            p.AddColor(0x00A844);
-            p.AddColor(0x008888);
+            p.AddColor(0x569A00);//+
+            //p.AddColor(0x00B800);//-
+            p.AddColor(0x00AB00);
+            //p.AddColor(0x00A844);//-
+            p.AddColor(0x008824);
+            p.AddColor(0x1192B4);
+            //RGB spectrum tuned
+            //p.AddColor(0x870df2);
+            //p.AddColor(0x140df2);
+            //p.AddColor(0x0d78f2);
+            //p.AddColor(0x0debf2);
+            //p.AddColor(0x0df287);
+            //p.AddColor(0x0df214);
+            //p.AddColor(0x78f20d);
+            //p.AddColor(0xebf20d);
+            //p.AddColor(0xf2870d);
+            //p.AddColor(0xf2140d);
+            //p.AddColor(0xf20d78);
+            //p.AddColor(0xf20deb);
+            //YIQ experiment 2
+            //p.AddColor(0x05dbfa);
+            //p.AddColor(0x02ecd9);
+            //p.AddColor(0x0dfdb2);
+            //p.AddColor(0xf0e095);
+            //p.AddColor(0xf2c3cd);
+            //p.AddColor(0xd8b2f9);
+            //p.AddColor(0x79c4fa);
+            ////
+            //p.AddColor(0x3950f7);
+            //p.AddColor(0x09a364);
+            //p.AddColor(0x18c027);
+            //p.AddColor(0xabb603);
+            //p.AddColor(0xef9725);
+            //p.AddColor(0xfa814c);
+            //p.AddColor(0xe06b81);
+            //p.AddColor(0x9743ec);
             //
             p.AddColor(0);
             p.AddShades(0, 64, 64);
