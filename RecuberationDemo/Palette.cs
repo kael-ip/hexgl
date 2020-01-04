@@ -217,23 +217,33 @@ namespace HexTex.Recuberation {
             p.AddColor(0);
             p.AddShades(0, 64, 64);
             for(int i = 0; i < 12; i++) {
-                p.AddWhites(i + 1, 8, 8);
+                int last = p.AddShades(i + 1, 4, 24);
+                last = p.AddShades(last, 4, 20);
+                last = p.AddShades(last, 4, 16);
+                last = p.AddShades(last, 4, 12);
+                last = p.AddShades(last, 4, 8);
             }
+            //for(int i = 0; i < 12; i++) {
+            //    p.AddWhites(i + 1, 8, 8);
+            //}
             System.Diagnostics.Debug.Assert(p.palette.Count <= 256);
             return p;
         }
-        private void AddShades(int id, int maxshades, int numshades) {
+        private int AddShades(int id, int maxshades, int numshades) {
+            int index = 0;
             for(int j = 0; j < maxshades; j++) {
                 var rgb = palette[id];
                 var rgbs = new byte[3];
                 for(int i = 0; i < 3; i++) {
                     rgbs[i] = Scale(rgb[i], numshades - j - 1, numshades - 1);
                 }
-                var index = FindColor(rgbs);
+                index = FindColor(rgbs);
                 if(index < 0) {
+                    index = palette.Count;
                     palette.Add(rgbs);
                 }
             }
+            return index;
         }
         private int FindColor(byte[] rgb) {
             for(int j = 0; j < palette.Count; j++) {
