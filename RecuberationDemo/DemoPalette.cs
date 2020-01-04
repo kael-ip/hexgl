@@ -33,11 +33,11 @@ namespace HexTex.Recuberation {
             g.SetLightVector(unitZ);
 
             System.Numerics.Matrix4x4 vmat = System.Numerics.Matrix4x4.Identity;
-            vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(8, 8, 13));
+            vmat = System.Numerics.Matrix4x4.Multiply(vmat, System.Numerics.Matrix4x4.CreateTranslation(8, 8, 100));
             var amat = vmat.ToMatrix3x4Array();
             g.SetCamMatrix(amat);
 
-            g.SetProjection(3f, 1000f);
+            g.SetProjection(23f, 1000f);
 
             if(isRotated) {
                 vmat = System.Numerics.Matrix4x4.CreateTranslation(-8, 0, 0);
