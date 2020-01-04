@@ -174,15 +174,21 @@ namespace HexTex.Recuberation {
             }
             return tbl;
         }
+        //static int[] lumaWeights = new int[] { 299, 587, 114 };
+        static int[] lumaWeights = new int[] { 76, 149, 29 }; // w*255/1000
         int FindNearestColor(int[] c) {
             int bestIndex = -1;
             int dmin = int.MaxValue;
+            int bestIndexLuma = -1;
+            int ldmin = int.MaxValue;
             for(int index = 0; index < palette.Count; index++) {
                 int d = 0;
+                int ld = 0;
                 byte[] rgb = palette[index];
                 for(int i = 0; i < 3; i++) {
                     int v = absdiff(c[i], rgb[i]);
                     d += v * v;
+                    ld += absdiff(c[i], rgb[i]) * lumaWeights[i];
                 }
                 if(d == 0)
                     return index;
@@ -190,6 +196,14 @@ namespace HexTex.Recuberation {
                     dmin = d;
                     bestIndex = index;
                 }
+                if(ld < ldmin) {
+                    ldmin = ld;
+                    bestIndexLuma = index;
+                }
+            }
+            return bestIndexLuma;
+            if(ldmin * 3 < dmin * 255) {
+                return bestIndexLuma;
             }
             return bestIndex;
         }
