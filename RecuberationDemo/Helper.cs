@@ -160,29 +160,6 @@ namespace HexTex.Recuberation {
         }
     }
 
-    class DemoHelper {
-        public static float[][] GeneratePalette(int count, float luma = 0.7f, float z = 0.4f) {
-            var rnd = new PRNG();
-            var palette = new float[count][];
-            for(var i = 0; i < count; i++) {
-                var rgb = new float[3];
-                var a = rnd.Next(1 << 15) * 3.0 / (1 << 15);
-                var ii = Math.Floor(a);
-                var j = (int)ii;
-                var c0 = (1 - z) * luma;
-                var c1 = a - ii;
-                var c2 = 1 - c1;
-                c1 = (c1 * z + 1 - z) * luma;
-                c2 = (c2 * z + 1 - z) * luma;
-                rgb[(j + 0) % 3] = (float)(c0);
-                rgb[(j + 1) % 3] = (float)(c1);
-                rgb[(j + 2) % 3] = (float)(c2);
-                palette[i] = rgb;
-            }
-            return palette;
-        }
-    }
-
     abstract class DemoBase {
         public abstract void Prepare(IGL gl);
         public abstract void Redraw(IGL gl);

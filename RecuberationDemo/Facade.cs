@@ -25,6 +25,7 @@ namespace HexTex.Recuberation {
         protected UniformFloat _uShadeLight;
         protected Sampler _tTexture;
         protected Sampler _tPalette;
+        protected Sampler _tLightTable;
 
         protected float hheight = 2.0f;
         //protected float clipNear = 3.0f;
@@ -33,11 +34,8 @@ namespace HexTex.Recuberation {
         private int viewportWidth;
         private int viewportHeight;
 
-        private uint[] palette;
-
         public void Init(IGL gl) {
             renderer = new Renderer(gl);
-            palette = CreatePalette();
             BuildShaders(gl);
             LoadTextures(gl);
         }
@@ -78,6 +76,7 @@ uniform float uAmbientLight;
 uniform float uShadeLight;
 uniform sampler2D tTexture;
 uniform sampler2D tPalette;
+uniform sampler2D tLightTable;
 varying vec2 vTexCoord;
 varying float vLightDot;
 varying float vVertexColor;
@@ -85,8 +84,8 @@ void main(void)
 {
 	vec4 texture = texture2D(tTexture, vTexCoord);
     float lightness = mix(0, vLightDot * uShadeLight + uAmbientLight, texture.a);
-    vec2 index = vec2(vVertexColor, clamp(lightness, 0, 1));
-    gl_FragColor = texture2D(tPalette, index);
+    vec2 index = vec2(vVertexColor, clamp(lightness, 0, 0.999));
+    gl_FragColor = texture2D(tPalette, vec2(0.5, texture2D(tLightTable, index).a));
 }
 ";
             var vsh = new VertexShader() { Source = vshaderSource };
@@ -107,6 +106,7 @@ void main(void)
             program.Uniforms.Add(_uShadeLight = new UniformFloat("uShadeLight", 1));
             program.Uniforms.Add(_tTexture = new Sampler("tTexture"));
             program.Uniforms.Add(_tPalette = new Sampler("tPalette"));
+            program.Uniforms.Add(_tLightTable = new Sampler("tLightTable"));
             program.Attributes.Add(_aPoint = new AttributeFloat("aPoint", 3));
             program.Attributes.Add(_aLightNormal = new AttributeFloat("aLightNormal", 3));
             program.Attributes.Add(_aTexCoord = new AttributeFloat("aTexCoord", 2));
@@ -114,11 +114,17 @@ void main(void)
             renderer.BuildAll();
         }
         protected virtual void LoadTextures(IGL gl) {
-            uint[] textures = new uint[2];
-            gl.GenTextures(2, textures);
+            //var p = Palette.CreateGradient(0xffffff);
+            //var p = Palette.Create16x16();
+            var p = Palette.CreateSmart();
+            uint[] palette = p.GetPalette();
+            byte[] lightTable = p.GetLightTable();
+            uint[] textures = new uint[3];
+            gl.GenTextures(3, textures);
             uint[] data = new uint[] { 0xffffffff };
             LoadTexture(gl, textures[0], 0, 0, 0, data);
-            LoadTexture(gl, textures[1], 1, 4, 4, palette);
+            LoadTexture(gl, textures[1], 1, 0, 8, palette);
+            LoadTextureL(gl, textures[2], 2, 8, 8, lightTable);
         }
         protected void LoadTexture(IGL gl, uint id, uint unit, int pw, int ph, Array data) {
             gl.ActiveTexture(GL.TEXTURE0 + unit);
@@ -129,6 +135,17 @@ void main(void)
             gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
             Helper.WithPinned(data, ptr => {
                 gl.TexImage2D(GL.TEXTURE_2D, 0, GL.RGBA, 1 << pw, 1 << ph, 0, GL.RGBA, GL.UNSIGNED_BYTE, ptr);
+            });
+        }
+        private void LoadTextureL(IGL gl, uint id, uint unit, int pw, int ph, Array data) {
+            gl.ActiveTexture(GL.TEXTURE0 + unit);
+            gl.BindTexture(GL.TEXTURE_2D, id);
+            gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.NEAREST);
+            gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.NEAREST);
+            gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
+            gl.TexParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
+            Helper.WithPinned(data, ptr => {
+                gl.TexImage2D(GL.TEXTURE_2D, 0, GL.ALPHA, 1 << pw, 1 << ph, 0, GL.ALPHA, GL.UNSIGNED_BYTE, ptr);
             });
         }
         public void Redraw(IGL gl, Action<Facade> painter) {
@@ -146,6 +163,7 @@ void main(void)
 
             _tTexture.Set(0);
             _tPalette.Set(1);
+            _tLightTable.Set(2);
             _uAmbientLight.Set(0.01f);
             _uShadeLight.Set(1.0f);
             _aVertexColor.Set(1f);
@@ -157,92 +175,13 @@ void main(void)
             gl.Flush();
             gl.Finish();
         }
-        protected virtual uint[] CreatePalette() {
-            //return CreatePalette256(0xffffffff);
-            return CreatePalette16x16(colors);
-        }
-        private uint[] CreatePalette256(uint color) {
-            var palette = new uint[256];
-            for(var i = 0; i < 256; i++) {
-                palette[i] = Scale(color, i, 255);
-            }
-            return palette;
-        }
-        static uint[] colors = new uint[]{
-            //0xffffff,
-
-            //NES light gray
-            0xBCBCBC,
-
-            //NES row 1
-            0x0078F8,
-            0x0058F8,
-            0x6844FC,
-            0xD800CC,
-            0xE40058,
-            0xF83800,
-            0xE45C10,
-            //0xAC7C00,
-            0x00B800,
-            0x00A800,
-            //0x00A844,
-            //0x008888,
-
-            //NES row 2
-            //0x3CBCFC,
-            //0x6888FC,
-            //0x9878F8,
-            //0xF878F8,
-            0xF85898,
-            //0xF87858,
-            //0xFCA044,
-            0xF8B800,
-            0xB8F818,
-            //0x58D854,
-            0x58F898,
-            0x00E8D8,
-
-            0xD8D828 //extra
-
-            //0xff0000,
-            //0x00ff00,
-            //0x0000ff,
-            //0x00ffff,
-            //0xff00ff,
-            //0xffff00,
-
-            //0x770000,
-            //0x007700,
-            //0x000077,
-            //0x0077ff,
-            //0x00ff77,
-            //0x7700ff,
-            //0xff0077,
-            //0x77ff00,
-            //0xff7700,
-        };
-        private uint[] CreatePalette16x16(uint[] colors) {
-            var palette = new uint[256];
-            for(var j = 0; j < 16; j++) {
-                for(var i = 0; i < 16; i++) {
-                    palette[j + i * 16] = Scale(colors[j], i, 15);
-                }
-            }
-            return palette;
-        }
-        private uint Scale(uint color, int n, int d) {
-            var r = ((color >> 0) & 255) * n / d;
-            var g = ((color >> 8) & 255) * n / d;
-            var b = ((color >> 16) & 255) * n / d;
-            return (uint)(0xff000000 | (b << 16) | (g << 8) | (r << 0));
-        }
 
         //
         // Facade API
         //
 
         public void SetColorIndex(int c) {
-            _aVertexColor.Set((c & 15) / 16f + 1 / 32f);
+            _aVertexColor.Set((c & 255) / 256f + 1 / 512f);
         }
         public void SetObjMatrix(float[] mat) { //3x4
             _uAngles.Set(mat, 0, 9);
