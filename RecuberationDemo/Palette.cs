@@ -165,7 +165,8 @@ namespace HexTex.Recuberation {
                         for(int i = 0; i < 3; i++) {
                             color[i] = rgb[i] * s / (shades - 1);
                         }
-                        int index = FindNearestColor(color);
+                        int delta;
+                        int index = FindNearestColor(color, out delta);
                         if(index > 255)
                             throw new InvalidOperationException();
                         tbl[c + s * length] = (byte)index;
@@ -176,7 +177,7 @@ namespace HexTex.Recuberation {
         }
         //static int[] lumaWeights = new int[] { 299, 587, 114 };
         static int[] lumaWeights = new int[] { 76, 149, 29 }; // w*255/1000
-        int FindNearestColor(int[] c) {
+        int FindNearestColor(int[] c, out int delta) {
             int bestIndex = -1;
             int dmin = int.MaxValue;
             int bestIndexLuma = -1;
@@ -190,8 +191,10 @@ namespace HexTex.Recuberation {
                     d += v * v;
                     ld += absdiff(c[i], rgb[i]) * lumaWeights[i];
                 }
-                if(d == 0)
+                if(d == 0) {
+                    delta = dmin;
                     return index;
+                }
                 if(d < dmin) {
                     dmin = d;
                     bestIndex = index;
@@ -201,10 +204,11 @@ namespace HexTex.Recuberation {
                     bestIndexLuma = index;
                 }
             }
-            return bestIndexLuma;
+            delta = dmin;
             if(ldmin * 3 < dmin * 255) {
                 return bestIndexLuma;
             }
+            //return bestIndexLuma;
             return bestIndex;
         }
         static int absdiff(int a, int b) {
