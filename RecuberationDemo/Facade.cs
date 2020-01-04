@@ -34,11 +34,8 @@ namespace HexTex.Recuberation {
         private int viewportWidth;
         private int viewportHeight;
 
-        private uint[] palette;
-
         public void Init(IGL gl) {
             renderer = new Renderer(gl);
-            palette = CreatePalette();
             BuildShaders(gl);
             LoadTextures(gl);
         }
@@ -117,12 +114,15 @@ void main(void)
             renderer.BuildAll();
         }
         protected virtual void LoadTextures(IGL gl) {
+            //var p = Palette.CreateGradient(0xffffff);
+            var p = Palette.Create16x16();
+            uint[] palette = p.GetPalette();
+            byte[] lightTable = p.GetLightTable();
             uint[] textures = new uint[3];
             gl.GenTextures(3, textures);
             uint[] data = new uint[] { 0xffffffff };
             LoadTexture(gl, textures[0], 0, 0, 0, data);
             LoadTexture(gl, textures[1], 1, 0, 8, palette);
-            var lightTable = CreateLightTable(palette, 256, 256);
             LoadTextureL(gl, textures[2], 2, 8, 8, lightTable);
         }
         protected void LoadTexture(IGL gl, uint id, uint unit, int pw, int ph, Array data) {
@@ -173,121 +173,6 @@ void main(void)
 
             gl.Flush();
             gl.Finish();
-        }
-        protected virtual uint[] CreatePalette() {
-            //return CreatePalette256(0xffffffff);
-            return CreatePalette16x16(colors);
-        }
-        private uint[] CreatePalette256(uint color) {
-            var palette = new uint[256];
-            for(var i = 0; i < 256; i++) {
-                palette[i] = Scale(color, i, 255);
-            }
-            return palette;
-        }
-        static uint[] colors = new uint[]{
-            //0xffffff,
-
-            //NES light gray
-            0xBCBCBC,
-
-            //NES row 1
-            0x0078F8,
-            0x0058F8,
-            0x6844FC,
-            0xD800CC,
-            0xE40058,
-            0xF83800,
-            0xE45C10,
-            //0xAC7C00,
-            0x00B800,
-            0x00A800,
-            //0x00A844,
-            //0x008888,
-
-            //NES row 2
-            //0x3CBCFC,
-            //0x6888FC,
-            //0x9878F8,
-            //0xF878F8,
-            0xF85898,
-            //0xF87858,
-            //0xFCA044,
-            0xF8B800,
-            0xB8F818,
-            //0x58D854,
-            0x58F898,
-            0x00E8D8,
-
-            0xD8D828 //extra
-
-            //0xff0000,
-            //0x00ff00,
-            //0x0000ff,
-            //0x00ffff,
-            //0xff00ff,
-            //0xffff00,
-
-            //0x770000,
-            //0x007700,
-            //0x000077,
-            //0x0077ff,
-            //0x00ff77,
-            //0x7700ff,
-            //0xff0077,
-            //0x77ff00,
-            //0xff7700,
-        };
-        private uint[] CreatePalette16x16(uint[] colors) {
-            var palette = new uint[256];
-            for(var j = 0; j < 16; j++) {
-                for(var i = 0; i < 16; i++) {
-                    palette[j + i * 16] = Scale(colors[j], 15 - i, 15);
-                }
-            }
-            return palette;
-        }
-        private uint Scale(uint color, int n, int d) {
-            var r = ((color >> 0) & 255) * n / d;
-            var g = ((color >> 8) & 255) * n / d;
-            var b = ((color >> 16) & 255) * n / d;
-            return (uint)(0xff000000 | (b << 16) | (g << 8) | (r << 0));
-        }
-        private byte[] CreateLightTable(uint[] palette, int length, int shades) {
-            var tbl = new byte[length * shades];
-            for(int c = 0; c < length; c++) {
-                for(int s = 0; s < shades; s++) {
-                    tbl[c + s * length] = FindNearestColor(palette, (int)palette[c], s, shades);
-                }
-            }
-            return tbl;
-        }
-        private byte FindNearestColor(uint[] palette, int color, int shade, int shades) {
-            int r = ((color >> 0) & 255) * shade / shades;
-            int g = ((color >> 8) & 255) * shade / shades;
-            int b = ((color >> 16) & 255) * shade / shades;
-            int bestIndex = -1;
-            int dmin = int.MaxValue;
-            for(int index = 0; index < palette.Length; index++) {
-                int tcolor = (int)palette[index];
-                int tr = ((tcolor >> 0) & 255);
-                int tg = ((tcolor >> 8) & 255);
-                int tb = ((tcolor >> 16) & 255);
-                int dr = abs(tr, r);
-                int dg = abs(tg, g);
-                int db = abs(tb, b);
-                int d = dr * dr + dg * dg + db * db;
-                if(d == 0)
-                    return (byte)index;
-                if(d < dmin) {
-                    dmin = d;
-                    bestIndex = index;
-                }
-            }
-            return (byte)bestIndex;
-        }
-        private int abs(int a, int b) {
-            return a > b ? a - b : b - a;
         }
 
         //

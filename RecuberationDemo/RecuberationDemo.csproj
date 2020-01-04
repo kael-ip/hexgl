@@ -63,6 +63,7 @@
     <Compile Include="Facade.cs" />
     <Compile Include="Generators\Volumes.cs" />
     <Compile Include="Helper.cs" />
+    <Compile Include="Palette.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repository.cs" />
