@@ -201,6 +201,12 @@ void main(void)
             var projection = GLMath.Frustum(-hheight * aspect, hheight * aspect, -hheight, hheight, clipNear, clipFar);
             _uPerspective.Set(projection);
         }
+        public void SetAmbient(float v) {
+            _uAmbientLight.Set(v);
+        }
+        public void SetShade(float v) {
+            _uShadeLight.Set(v);
+        }
         public void DrawMesh(Mesh mesh, bool colored, int dim = 255) {
             var hVertex = GCHandle.Alloc(mesh.VertexBuffer, GCHandleType.Pinned);
             var hNormal = GCHandle.Alloc(mesh.NormalBuffer, GCHandleType.Pinned);

@@ -28,6 +28,8 @@ namespace HexTex.Recuberation.Scenes {
             this.objCube = Repository.Instance.objCube;
         }
         protected override void RenderObjects(Facade g) {
+            g.SetAmbient(0.8f);
+            g.SetShade(0.3f);
             g.SetObjMatrix(objMat);
             g.SetColorIndex(0);
             g.DrawMesh(earth.Mesh, true, 180);

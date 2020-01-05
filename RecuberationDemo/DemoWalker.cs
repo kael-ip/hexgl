@@ -49,6 +49,9 @@ namespace HexTex.Recuberation {
         static float[] identity = new float[] { 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 };
         protected override void OnPaint(Facade g) {
             Preset preset = presets[pIndex];
+            
+            g.SetAmbient(0.8f);
+            g.SetShade(0.3f);
 
             var dt = DateTime.Now;
             double time = ((0.001 * dt.Millisecond) + dt.Second) / 60;
