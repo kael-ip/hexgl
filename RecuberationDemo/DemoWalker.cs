@@ -73,7 +73,7 @@ namespace HexTex.Recuberation {
 
             g.SetObjMatrix(identity);
             g.SetColorIndex(0);
-            g.DrawMesh(preset.System.Mesh, true);
+            g.DrawMesh(preset.System.Mesh, true, 200);
 
             foreach(var controller in preset.System.Controllers) {
                 controller.ReadLocation3x4(mat);

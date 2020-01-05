@@ -319,5 +319,8 @@ namespace HexTex.Recuberation {
                 }
             }
         }
+        public int GetShadedColor(int color, int shade) {
+            return lightTable[(color & 255) + (shade & 255) * length];
+        }
     }
 }

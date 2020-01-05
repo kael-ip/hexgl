@@ -30,7 +30,7 @@ namespace HexTex.Recuberation.Scenes {
         protected override void RenderObjects(Facade g) {
             g.SetObjMatrix(objMat);
             g.SetColorIndex(0);
-            g.DrawMesh(earth.Mesh, true);
+            g.DrawMesh(earth.Mesh, true, 180);
             foreach(var controller in earth.Controllers) {
                 float[] mat = new float[12];
                 controller.ReadLocation3x4(mat);

@@ -34,6 +34,8 @@ namespace HexTex.Recuberation {
         private int viewportWidth;
         private int viewportHeight;
 
+        private Palette palette;
+
         public void Init(IGL gl) {
             renderer = new Renderer(gl);
             BuildShaders(gl);
@@ -117,6 +119,7 @@ void main(void)
             //var p = Palette.CreateGradient(0xffffff);
             //var p = Palette.Create16x16();
             var p = Palette.CreateSmart();
+            this.palette = p;
             uint[] palette = p.GetPalette();
             byte[] lightTable = p.GetLightTable();
             uint[] textures = new uint[3];
@@ -198,7 +201,7 @@ void main(void)
             var projection = GLMath.Frustum(-hheight * aspect, hheight * aspect, -hheight, hheight, clipNear, clipFar);
             _uPerspective.Set(projection);
         }
-        public void DrawMesh(Mesh mesh, bool colored) {
+        public void DrawMesh(Mesh mesh, bool colored, int dim = 255) {
             var hVertex = GCHandle.Alloc(mesh.VertexBuffer, GCHandleType.Pinned);
             var hNormal = GCHandle.Alloc(mesh.NormalBuffer, GCHandleType.Pinned);
 
@@ -208,7 +211,9 @@ void main(void)
 
             for(int i = 0, j = 0; i < mesh.PrimitiveCount; i++, j += mesh.PrimitiveLength) {
                 if(colored) {
-                    SetColorIndex(((QMesh)mesh).Quads[i].Color);
+                    int c = ((QMesh)mesh).Quads[i].Color;
+                    c = palette.GetShadedColor(c, dim);
+                    SetColorIndex(c);
                 }
                 renderer.DrawTriangleFans(program, j, mesh.PrimitiveLength);
             }
