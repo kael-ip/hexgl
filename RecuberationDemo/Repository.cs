@@ -21,6 +21,7 @@ namespace HexTex.Recuberation {
         public WalkingSystem sysPlane;
         public WalkingSystem sysMetaBall4;
         public WalkingSystem sysMetaBall2;
+        public WalkingSystem sysCuboid0;
         public Mesh objCube;
         public Mesh objBanner;
         public Mesh objBannerMhm;
@@ -35,6 +36,7 @@ namespace HexTex.Recuberation {
             sysSphereInside = CreateEarthSphereInside();
             sysMetaBall4 = CreateEarthMB4();
             sysMetaBall2 = CreateEarthMB2();
+            sysCuboid0 = CreateEarthCuboid0();
         }
         private Mesh CreateCube() {
             QuadMap quadMap = new QuadMap();
@@ -113,6 +115,17 @@ namespace HexTex.Recuberation {
             quadMap.Build(volume);
             var system = new WalkingSystem(quadMap);
             system.AddRandomWalkers(9, 6345, 64, 8, 4);
+            return system;
+        }
+        private WalkingSystem CreateEarthCuboid0() {
+            var volume = new CachedVolume(new Bounds3D(-10, 10, -10, 10, -10, 10));
+            volume.MakeBox(new Bounds3D(-5, 3, -5, 3, -5, 3), true);
+            volume.MakeBox(new Bounds3D(-1, 5, -1, 5, -1, 5), true);
+            volume.MakeBox(new Bounds3D(2, 5, 2, 5, 2, 5), false);
+            QuadMap quadMap = new QuadMap();
+            quadMap.Build(volume);
+            var system = new WalkingSystem(quadMap);
+            system.AddRandomWalkers(12, 4537, 64, 8, 4);
             return system;
         }
     }
