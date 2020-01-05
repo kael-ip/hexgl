@@ -20,6 +20,12 @@ namespace HexTex.Recuberation {
                 scene = new TitleScene1(repository.objBannerMhm, 64, 32, patrows * t.RowRate);
                 frame0 = t.Frame;
             }));
+            tracker.Add(new Tracker.CommandDelay(patrows * 2));
+            tracker.Add(new Tracker.CommandCall(t => {
+                scene = new PinRotorScene(15, 1, patrows * t.RowRate, true);
+                frame0 = t.Frame;
+            }));
+            tracker.Add(new Tracker.CommandDelay(patrows * 4));
             tracker.Add(new Tracker.CommandCall(t => {
                 scene = new RotorScene(repository.sysCuboid1.Mesh, 25, 1, patrows * t.RowRate, true, 2);
                 frame0 = t.Frame;
