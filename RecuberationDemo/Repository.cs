@@ -39,15 +39,9 @@ namespace HexTex.Recuberation {
         private Mesh CreateCube() {
             QuadMap quadMap = new QuadMap();
             quadMap.BuildCube();
-            var quads = quadMap.Quads;
-            Mesh mesh = new Mesh(4, quads.Count, true, false);
-            int i = 0;
-            foreach(var quad in quads) {
-                i = quad.FillQuadVerts(mesh.VertexBuffer, mesh.NormalBuffer, i);
-            }
-            return mesh;
+            return new QMesh(quadMap.Quads);
         }
-        private Mesh CreateBanner() {
+        private QMesh CreateBanner() {
             QuadMap quadMap = new QuadMap();
             int[] data = new int[DemoData.Banner1.Length];
             var rnd = new PRNG();
@@ -55,20 +49,14 @@ namespace HexTex.Recuberation {
                 data[i] = DemoData.Banner1[i] * (rnd.Next(12) + 1);
             }
             quadMap.BuildHeightPlane(data, 32, 17, 0, true);
-            var quads = quadMap.Quads;
-            Trace.TraceInformation("Quads count = {0}", quads.Count);
-            Mesh mesh = new QMesh(quads);
-            return mesh;
+            return new QMesh(quadMap.Quads);
         }
         private QMesh CreateBanner(System.Drawing.Bitmap bitmap) {
             var pixelMap = PixelMap.Load(bitmap);
             QuadMap quadMap = new QuadMap();
             quadMap.BuildHeightPlane(pixelMap.Width, pixelMap.Height,
                 (x, y) => pixelMap[x, y] * 32 / 256, 0, true);
-            var quads = quadMap.Quads;
-            Trace.TraceInformation("Quads count = {0}", quads.Count);
-            QMesh mesh = new QMesh(quads);
-            return mesh;
+            return new QMesh(quadMap.Quads);
         }
         private WalkingSystem CreateEarthPlane() {
             QuadMap quadMap = new QuadMap();

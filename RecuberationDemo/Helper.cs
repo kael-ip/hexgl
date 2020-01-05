@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -195,6 +196,7 @@ namespace HexTex.Recuberation {
             : base(4, quads.Count, true, false) {
             this.quads = quads;
             int offset = 0;
+            Trace.TraceInformation("Quads count = {0}", quads.Count);
             foreach(var quad in quads) {
                 offset = quad.FillQuadVerts(VertexBuffer, NormalBuffer, offset);
             }
