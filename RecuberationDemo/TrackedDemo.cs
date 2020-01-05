@@ -11,55 +11,70 @@ using HexTex.Recuberation.Scenes;
 namespace HexTex.Recuberation {
 
     class TrackedDemo : TrackedDemoBase {
+        const int patrows = 48;
         protected override void SetupTracker(Tracker tracker) {
             base.SetupTracker(tracker);
             tracker.RowRate = 3;
             tracker.Add(new Tracker.CommandLabel());
             tracker.Add(new Tracker.CommandCall(t => {
-                scene = new TitleScene1(repository.objBannerMhm, 64, 32, 64 * t.RowRate);
+                scene = new TitleScene1(repository.objBannerMhm, 64, 32, patrows * t.RowRate);
                 frame0 = t.Frame;
             }));
-            tracker.Add(new Tracker.CommandDelay(64*2));
             tracker.Add(new Tracker.CommandCall(t => {
-                scene = new TitleScene2(repository.objBanner, 32, 17, 64 * t.RowRate);
+                scene = new RotorScene(repository.sysCuboid1.Mesh, 25, 1, patrows * t.RowRate, true, 2);
                 frame0 = t.Frame;
             }));
-            tracker.Add(new Tracker.CommandDelay(64));
+            tracker.Add(new Tracker.CommandDelay(patrows * 2));
             tracker.Add(new Tracker.CommandCall(t => {
-                scene = new WalkerScene(repository.sysPlane, 1f / 8, 64 * t.RowRate, false);
+                scene = new RotorScene(repository.sysCuboid2.Mesh, 25, 1, patrows * t.RowRate, true, 7);
+                frame0 = t.Frame;
+            }));
+            tracker.Add(new Tracker.CommandDelay(patrows * 2));
+            tracker.Add(new Tracker.CommandCall(t => {
+                scene = new RotorScene(repository.sysCuboid3.Mesh, 25, 1, patrows * t.RowRate, true, 4);
+                frame0 = t.Frame;
+            }));
+            tracker.Add(new Tracker.CommandDelay(patrows * 2));
+            tracker.Add(new Tracker.CommandCall(t => {
+                scene = new TitleScene2(repository.objBanner, 32, 17, patrows * t.RowRate);
+                frame0 = t.Frame;
+            }));
+            tracker.Add(new Tracker.CommandDelay(patrows));
+            tracker.Add(new Tracker.CommandCall(t => {
+                scene = new WalkerScene(repository.sysPlane, 1f / 8, patrows * t.RowRate, false);
                 scene.camPos[0] = 5f;
                 scene.camPos[1] = 5f;
                 scene.camPos[2] = 0;
                 frame0 = t.Frame;
             }));
-            tracker.Add(new Tracker.CommandDelay(64));
+            tracker.Add(new Tracker.CommandDelay(patrows));
             tracker.Add(new Tracker.CommandCall(t => {
-                scene = new WalkerScene(repository.sysCube1, 1, 64 * t.RowRate, false);
+                scene = new WalkerScene(repository.sysCube1, 1, patrows * t.RowRate, false);
                 frame0 = t.Frame;
             }));
-            tracker.Add(new Tracker.CommandDelay(64));
+            tracker.Add(new Tracker.CommandDelay(patrows));
             tracker.Add(new Tracker.CommandCall(t => {
-                scene = new WalkerScene(repository.sysSphere3, 1, 64 * t.RowRate, true);
+                scene = new WalkerScene(repository.sysSphere3, 1, patrows * t.RowRate, true);
                 frame0 = t.Frame;
             }));
-            tracker.Add(new Tracker.CommandDelay(64));
+            tracker.Add(new Tracker.CommandDelay(patrows));
             tracker.Add(new Tracker.CommandCall(t => {
-                scene = new WalkerScene(repository.sysMetaBall4, -3, 64 * t.RowRate, true);
+                scene = new WalkerScene(repository.sysMetaBall4, -3, patrows * t.RowRate, true);
                 scene.camz = 12f;
                 frame0 = t.Frame;
             }));
-            tracker.Add(new Tracker.CommandDelay(64));
+            tracker.Add(new Tracker.CommandDelay(patrows));
             tracker.Add(new Tracker.CommandCall(t => {
-                scene = new WalkerScene(repository.sysMetaBall2, 3, 64 * t.RowRate, true);
+                scene = new WalkerScene(repository.sysMetaBall2, 3, patrows * t.RowRate, true);
                 frame0 = t.Frame;
             }));
-            tracker.Add(new Tracker.CommandDelay(64));
+            tracker.Add(new Tracker.CommandDelay(patrows));
             tracker.Add(new Tracker.CommandCall(t => {
-                scene = new WalkerScene(repository.sysSphereInside, -1f / 16, 64 * t.RowRate, true);
+                scene = new WalkerScene(repository.sysSphereInside, -1f / 16, patrows * t.RowRate, true);
                 scene.camz = 6f;
                 frame0 = t.Frame;
             }));
-            tracker.Add(new Tracker.CommandDelay(64));
+            tracker.Add(new Tracker.CommandDelay(patrows));
             tracker.Add(new Tracker.CommandLoop(0, 1));
             tracker.FrameHandler = OnFrame;
         }

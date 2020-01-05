@@ -22,9 +22,15 @@ namespace HexTex.Recuberation {
         public WalkingSystem sysMetaBall4;
         public WalkingSystem sysMetaBall2;
         public WalkingSystem sysCuboid0;
+        public WalkingSystem sysCuboid1;
+        public WalkingSystem sysCuboid2;
+        public WalkingSystem sysCuboid3;
         public Mesh objCube;
         public Mesh objBanner;
         public Mesh objBannerMhm;
+        public Mesh objSlab;
+        public Mesh objPin;
+        public Mesh objAntiCube;
 
         public void Init() {
             objCube = CreateCube();
@@ -37,6 +43,12 @@ namespace HexTex.Recuberation {
             sysMetaBall4 = CreateEarthMB4();
             sysMetaBall2 = CreateEarthMB2();
             sysCuboid0 = CreateEarthCuboid0();
+            sysCuboid1 = CreateEarthCuboidRandom(743);
+            sysCuboid2 = CreateEarthCuboidRandom(8942);
+            sysCuboid3 = CreateEarthCuboidRandom(604);
+            objSlab = CreateSlab();
+            objPin = CreatePin();
+            objAntiCube = CreateAntiCube();
         }
         private Mesh CreateCube() {
             QuadMap quadMap = new QuadMap();
@@ -127,6 +139,55 @@ namespace HexTex.Recuberation {
             var system = new WalkingSystem(quadMap);
             system.AddRandomWalkers(12, 4537, 64, 8, 4);
             return system;
+        }
+        private WalkingSystem CreateEarthCuboidRandom(int seed) {
+            var volume = new CachedVolume(new Bounds3D(-10, 10, -10, 10, -10, 10));
+            var rnd = new PRNG(seed);
+            int maxs = 10;
+            for(int i = 0; i < 30; i++) {
+                int xs = rnd.Next(maxs) + 1;
+                int ys = rnd.Next(maxs) + 1;
+                int zs = rnd.Next(maxs) + 1;
+                int x = rnd.Next(20 - xs) - 10;
+                int y = rnd.Next(20 - ys) - 10;
+                int z = rnd.Next(20 - zs) - 10;
+                bool occupy = (rnd.Next() & 12) != 0;
+                volume.MakeBox(new Bounds3D(x, x + xs, y, y + ys, z, z + zs), occupy);
+            }
+            QuadMap quadMap = new QuadMap();
+            quadMap.Build(volume);
+            var system = new WalkingSystem(quadMap);
+            system.AddRandomWalkers(12, 4537, 64, 8, 4);
+            return system;
+        }
+        private Mesh CreateSlab() {
+            int s = 5;
+            var volume = new CachedVolume(new Bounds3D(-s, s, -s, s, 0, 1));
+            volume.MakeBox(new Bounds3D(-s, s, -s, s, 0, 1), true);
+            QuadMap quadMap = new QuadMap();
+            quadMap.Build(volume);
+            return new QMesh(quadMap.Quads);
+        }
+        private Mesh CreatePin() {
+            int s = 3;
+            int e = 1;
+            var volume = new CachedVolume(new Bounds3D(-e, e, -e, e, -s, s));
+            volume.MakeBox(new Bounds3D(-e, e, -e, e, -s, s), true);
+            QuadMap quadMap = new QuadMap();
+            quadMap.Build(volume);
+            return new QMesh(quadMap.Quads);
+        }
+        private Mesh CreateAntiCube() {
+            int s = 3;
+            int e = 1;
+            var volume = new CachedVolume(new Bounds3D(-s, s, -s, s, -s, s));
+            volume.MakeBox(new Bounds3D(-s, s, -s, s, -s, s), true);
+            volume.MakeBox(new Bounds3D(-e, e, -e, e, -s, s), false);
+            volume.MakeBox(new Bounds3D(-e, e, -s, s, -e, e), false);
+            volume.MakeBox(new Bounds3D(-s, s, -e, e, -e, e), false);
+            QuadMap quadMap = new QuadMap();
+            quadMap.Build(volume);
+            return new QMesh(quadMap.Quads);
         }
     }
 }
