@@ -35,7 +35,7 @@ namespace HexTex.Recuberation.Scenes {
                 float[] mat = new float[12];
                 controller.ReadLocation3x4(mat);
                 g.SetObjMatrix(mat);
-                g.SetColorIndex((controller.Color + 1) % 12);
+                g.SetColorIndex(controller.Color);
                 g.DrawMesh(objCube, false);
             }
         }

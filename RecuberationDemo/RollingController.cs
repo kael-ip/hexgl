@@ -184,7 +184,7 @@ namespace HexTex.Recuberation {
                 while(quad == null || quad.IsOccupied) {
                     quad = map.Quads[rnd.Next(map.Quads.Count)];
                 }
-                controller.Setup(quad, (Axis)rnd.Next(3), (rnd.Next() & 1) != 0, stepFramesMin + (stepFramesMag << rnd.Next(stepFramesVar)), i + 1);
+                controller.Setup(quad, (Axis)rnd.Next(3), (rnd.Next() & 1) != 0, stepFramesMin + (stepFramesMag << rnd.Next(stepFramesVar)), i % 12 + 1);
                 controllers.Add(controller);
             }
         }
