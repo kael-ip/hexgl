@@ -205,19 +205,21 @@ namespace HexTex.Recuberation {
             return new QMesh(quadMap.Quads);
         }
         private Mesh CreateFirTree() {
-            int th = 5, p1h = 7, p2h = 5, p3h = 3;
-            int s = p1h + 3;
-            var volume = new CachedVolume(new Bounds3D(-s, s, -s, s, 0, th + p1h + p2h + p3h));
-            volume.MakePyramid(0, 0, th + p1h + p2h, p3h, true, true);
-            volume.MakePyramid(0, 0, th + p1h, p2h, true, true);
-            volume.MakePyramid(0, 0, th, p1h, true, true);
-            volume.MakeRhombamid(0, 0, 3 + th + p1h, p2h + 2, true, true);
-            volume.MakeRhombamid(0, 0, 3 + th, p1h + 2, true, true);
+            int th = 5;
+            int p1h = 9, p2h = 5, p3h = 3;
+            int s = p1h + 1;
+            var volume = new CachedVolume(new Bounds3D(-s, s, -s, s, 0, th + 16));
+            //volume.MakePyramid(0, 0, th + 11, 3, true, true);
+            volume.MakeRhombamid(0, 0, th + 10, 5, true, true);
+            //volume.MakePyramid(0, 0, th + 7, 5, true, true);
+            volume.MakeRhombamid(0, 0, th + 5, 7, true, true);
+            //volume.MakePyramid(0, 0, th + 3, 7, true, true);
+            volume.MakeRhombamid(0, 0, th, 9, true, true);
             volume.MakeBox(new Bounds3D(-0, 1, -0, 1, 0, th), true);
             QuadMap quadMap = new QuadMap();
             quadMap.Build(volume);
-            var rnd = new PRNG(234);
-            for(var i = 0; i < 200; i++) {
+            var rnd = new PRNG(78487);
+            for(var i = 0; i < 240; i++) {
                 int index = rnd.Next(quadMap.Quads.Count);
                 var q = quadMap.Quads[index];
                 if(q.Location.Z >= th) {

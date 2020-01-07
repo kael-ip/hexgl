@@ -22,8 +22,8 @@ namespace HexTex.Recuberation {
             }));
             tracker.Add(new Tracker.CommandDelay(patrows * 2));
             tracker.Add(new Tracker.CommandCall(t => {
-                scene = new RotorScene(repository.objFirTree, 25f, 0.2f, patrows * t.RowRate, true, -1) {
-                    zoff = -5, tilt = 0.8f
+                scene = new RotorScene(repository.objFirTree, 20f, -0.2f, patrows * t.RowRate, true, -1) {
+                    zoff = -10, tilt = 1f
                 };
                 frame0 = t.Frame;
             }));
