@@ -13,6 +13,8 @@ namespace HexTex.Recuberation.Scenes {
         protected int color;
         public Mesh obj;
         public float speed;
+        public int zoff = 0;
+        public float tilt = 0.66f;
         public RotorScene(Mesh obj, float z, float speed, int period, bool isLightRotated, int color) {
             this.obj = obj;
             this.speed = speed;
@@ -32,8 +34,12 @@ namespace HexTex.Recuberation.Scenes {
             g.SetAmbient(0.8f);
             g.SetShade(0.3f);
             g.SetObjMatrix(objMat);
-            g.SetColorIndex(color);
-            g.DrawMesh(obj, false);
+            if(color >= 0) {
+                g.SetColorIndex(color);
+                g.DrawMesh(obj, false);
+            } else {
+                g.DrawMesh(obj, true);
+            }
         }
         public override void Update(int frame) {
             base.Update(frame);
@@ -45,8 +51,9 @@ namespace HexTex.Recuberation.Scenes {
                 lightVec[2] = 0.5f;
             }
             camRotZ = tRotation * speed;
-            camRotX = (float)(-Math.PI / 2 * 0.66);
+            camRotX = (float)(-Math.PI / 2 * tilt);
             HexTex.OpenGL.GLMath.Identity3(objMat);
+            objMat[11] = zoff;
         }
     }
 

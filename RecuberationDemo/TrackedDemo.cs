@@ -22,6 +22,13 @@ namespace HexTex.Recuberation {
             }));
             tracker.Add(new Tracker.CommandDelay(patrows * 2));
             tracker.Add(new Tracker.CommandCall(t => {
+                scene = new RotorScene(repository.objFirTree, 25f, 0.2f, patrows * t.RowRate, true, -1) {
+                    zoff = -5, tilt = 1f
+                };
+                frame0 = t.Frame;
+            }));
+            tracker.Add(new Tracker.CommandDelay(patrows * 4));
+            tracker.Add(new Tracker.CommandCall(t => {
                 scene = new SlabRotorScene(15, 0.2f, patrows * t.RowRate, true);
                 frame0 = t.Frame;
             }));

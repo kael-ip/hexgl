@@ -35,6 +35,19 @@ namespace HexTex.Recuberation {
                 }
             }
         }
+        public void MakePyramid(int xo, int yo, int zo, int height, bool upsidedown, bool occupy) {
+            for(var z = 0; z < height; z++) {
+                for(var y = -z; y <= z; y++) {
+                    for(var x = -z; x <= z; x++) {
+                        int zz = upsidedown ? height - z - 1 : z;
+                        int index = GetIndex(x + xo, y + yo, zz + zo);
+                        if(index >= 0) {
+                            data[index] = (byte)(occupy ? 1 : 0);
+                        }
+                    }
+                }
+            }
+        }
         private int GetIndex(int x, int y, int z) {
             if(x < bounds.Xmin
             || x >= bounds.Xmax

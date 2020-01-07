@@ -31,6 +31,10 @@ namespace HexTex.Recuberation {
         public Mesh objSlab;
         public Mesh objPin;
         public Mesh objAntiCube;
+        public Mesh objPyramid1;
+        public Mesh objPyramid2;
+        public Mesh objPyramid3;
+        public Mesh objFirTree;
 
         public void Init() {
             objCube = CreateCube();
@@ -49,6 +53,10 @@ namespace HexTex.Recuberation {
             objSlab = CreateSlab();
             objPin = CreatePin();
             objAntiCube = CreateAntiCube();
+            objPyramid1 = CreatePyramid(3);
+            objPyramid2 = CreatePyramid(4);
+            objPyramid3 = CreatePyramid(5);
+            objFirTree = CreateFirTree();
         }
         private Mesh CreateCube() {
             QuadMap quadMap = new QuadMap();
@@ -185,6 +193,25 @@ namespace HexTex.Recuberation {
             volume.MakeBox(new Bounds3D(-e, e, -e, e, -s, s), false);
             volume.MakeBox(new Bounds3D(-e, e, -s, s, -e, e), false);
             volume.MakeBox(new Bounds3D(-s, s, -e, e, -e, e), false);
+            QuadMap quadMap = new QuadMap();
+            quadMap.Build(volume);
+            return new QMesh(quadMap.Quads);
+        }
+        private Mesh CreatePyramid(int s) {
+            var volume = new CachedVolume(new Bounds3D(-s, s, -s, s, 0, s));
+            volume.MakePyramid(0, 0, 0, s, true, true);
+            QuadMap quadMap = new QuadMap();
+            quadMap.Build(volume);
+            return new QMesh(quadMap.Quads);
+        }
+        private Mesh CreateFirTree() {
+            int th = 3, p1h = 7, p2h = 5, p3h = 3;
+            int s = p1h;
+            var volume = new CachedVolume(new Bounds3D(-s, s, -s, s, 0, th + p1h + p2h + p3h));
+            volume.MakePyramid(0, 0, th + p1h + p2h, p3h, true, true);
+            volume.MakePyramid(0, 0, th + p1h, p2h, true, true);
+            volume.MakePyramid(0, 0, th, p1h, true, true);
+            volume.MakeBox(new Bounds3D(-0, 1, -0, 1, 0, th), true);
             QuadMap quadMap = new QuadMap();
             quadMap.Build(volume);
             return new QMesh(quadMap.Quads);
