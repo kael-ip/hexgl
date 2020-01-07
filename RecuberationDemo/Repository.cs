@@ -205,12 +205,14 @@ namespace HexTex.Recuberation {
             return new QMesh(quadMap.Quads);
         }
         private Mesh CreateFirTree() {
-            int th = 3, p1h = 7, p2h = 5, p3h = 3;
-            int s = p1h;
+            int th = 5, p1h = 7, p2h = 5, p3h = 3;
+            int s = p1h + 3;
             var volume = new CachedVolume(new Bounds3D(-s, s, -s, s, 0, th + p1h + p2h + p3h));
             volume.MakePyramid(0, 0, th + p1h + p2h, p3h, true, true);
             volume.MakePyramid(0, 0, th + p1h, p2h, true, true);
             volume.MakePyramid(0, 0, th, p1h, true, true);
+            volume.MakeRhombamid(0, 0, 3 + th + p1h, p2h + 2, true, true);
+            volume.MakeRhombamid(0, 0, 3 + th, p1h + 2, true, true);
             volume.MakeBox(new Bounds3D(-0, 1, -0, 1, 0, th), true);
             QuadMap quadMap = new QuadMap();
             quadMap.Build(volume);
