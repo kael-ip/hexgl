@@ -155,7 +155,7 @@ namespace HexTex.Recuberation.Scenes {
                 lightVec[2] = 0.5f;
             }
             camRotZ = 0;
-            camRotX = (float)(-Math.PI / 2 * 0.66);
+            camRotX = (float)(-Math.PI / 2);
 
             for(var i = 0; i < numobjs; i++) {
                 GLMath.Rotate3(objMats[i], Math.PI * i / 12 + tRotation * speed * (i + 100) / 100, 0, 0, 1);
