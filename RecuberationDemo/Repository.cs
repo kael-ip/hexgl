@@ -214,6 +214,14 @@ namespace HexTex.Recuberation {
             volume.MakeBox(new Bounds3D(-0, 1, -0, 1, 0, th), true);
             QuadMap quadMap = new QuadMap();
             quadMap.Build(volume);
+            var rnd = new PRNG(234);
+            for(var i = 0; i < 200; i++) {
+                int index = rnd.Next(quadMap.Quads.Count);
+                var q = quadMap.Quads[index];
+                if(q.Location.Z >= th) {
+                    q.Color = rnd.Next(12) + 1;
+                }
+            }
             return new QMesh(quadMap.Quads);
         }
     }
