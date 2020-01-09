@@ -57,5 +57,8 @@ namespace HexTex.Recuberation {
             }
             return result;
         }
+        public void Export(string fileName) {
+            DirtyStuff.WriteC(Width, Height, Values, fileName);
+        }
     }
 }

@@ -22,6 +22,14 @@ namespace HexTex.Recuberation {
         /// </summary>
         [STAThread]
         static void Main() {
+            {
+                var pixelMap = PixelMap.Load(Properties.Resources.puberty);
+                pixelMap.Export("puberty.inc");
+            }
+            //
+            //
+            //
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Idle += Application_Idle;

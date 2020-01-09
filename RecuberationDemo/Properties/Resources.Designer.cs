@@ -63,6 +63,16 @@ namespace HexTex.Recuberation.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap puberty {
+            get {
+                object obj = ResourceManager.GetObject("puberty", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap rcbmhm {
             get {
                 object obj = ResourceManager.GetObject("rcbmhm", resourceCulture);
