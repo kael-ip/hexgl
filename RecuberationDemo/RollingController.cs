@@ -10,6 +10,7 @@ namespace HexTex.Recuberation {
 
     class RollingController {
         private Quad quad, next;
+        private IBinaryVolumeWritable volume;
         private Axis dirAxis;
         private bool dirIsNegative;
         private Edge edge;
@@ -19,11 +20,12 @@ namespace HexTex.Recuberation {
         private int color;
         public int Period { get; set; }
         public int Color { get { return color; } }
-        public RollingController() {
+        public RollingController(IBinaryVolumeWritable volume) {
             this.omat = new float[12];
             this.mat = new float[12];
             GLMath.Identity3(omat);
             GLMath.Identity3(mat);
+            this.volume = volume;
         }
         public void Setup(Quad quad, Axis dirAxis, bool dirIsNegative, int period, int color) {
             if(quad.IsOccupied) {
@@ -124,14 +126,13 @@ namespace HexTex.Recuberation {
             Array.Copy(mat, m, 12);
         }
         private void ReAnimate() {
-            //TODO: mark quad occupation and check if it is not occupied
-            quad.IsOccupied = false;
+            SetIsOccupied(quad, false, next);
             quad = next;
-            quad.IsOccupied = true;
+            SetIsOccupied(quad, true, null);
             next = null;
             edge = null;
             int attempt = 0;
-            while(next == null || next.IsOccupied) {
+            while(next == null || IsOccupied(next, quad)) {
                 if(attempt > 10) {//abort
                     next = quad;
                     rq = 0;
@@ -157,11 +158,89 @@ namespace HexTex.Recuberation {
                 }
                 attempt++;
             }
-            next.IsOccupied = true;
+            SetIsOccupied(next, true, quad);
             quad.Color = color;
-            //TODO: occupy quads based on volume cells and consider self-occupation for 0-moves
             System.Diagnostics.Trace.TraceInformation("Direction: {1}{0}", dirAxis, dirIsNegative ? "-" : "+");
             //if actual angle == 0, repeat, limit retries
+        }
+        private void SetIsOccupied(Quad q, bool yes, Quad prev) {
+            q.IsOccupied = yes;
+            if(volume != null) {
+                VectorI3D vp = GetVoxelLocation(q, 0);
+                volume.SetIsOccupied(vp.X, vp.Y, vp.Z, yes);
+                vp = GetVoxelLocation(q, 1);
+                volume.SetIsOccupied(vp.X, vp.Y, vp.Z, yes);
+                if(prev != null) {
+                    vp = GetVoxelLocation(q, 0, prev);
+                    volume.SetIsOccupied(vp.X, vp.Y, vp.Z, yes);
+                }
+            }
+        }
+        private bool IsOccupied(Quad q, Quad prev) {
+            if(q.IsOccupied)
+                return true;
+            if(volume != null) {
+                VectorI3D vp = GetVoxelLocation(q, 0);
+                if(volume.IsOccupied(vp.X, vp.Y, vp.Z))
+                    return true;
+                vp = GetVoxelLocation(q, 1);
+                if(volume.IsOccupied(vp.X, vp.Y, vp.Z))
+                    return true;
+                if(prev != null) {
+                    vp = GetVoxelLocation(q, 0, prev);
+                    if(volume.IsOccupied(vp.X, vp.Y, vp.Z))
+                        return true;
+                }
+            }
+            return false;
+        }
+        private VectorI3D GetVoxelLocation(Quad q, int off) {
+            VectorI3D vp = q.Location;
+            if(q.NormalIsNegative) {
+                off = -off - 1;
+            }
+            switch(q.NormalAxis) {
+                case Axis.X:
+                    vp.X += off;
+                    break;
+                case Axis.Y:
+                    vp.Y += off;
+                    break;
+                case Axis.Z:
+                    vp.Z += off;
+                    break;
+            }
+            return vp;
+        }
+        private VectorI3D GetVoxelLocation(Quad q, int off, Quad prev) {
+            VectorI3D vp = q.Location;
+            if(q.NormalIsNegative) {
+                off = -off - 1;
+            }
+            int poff = prev.NormalIsNegative ? -1 : 1;
+            switch(prev.NormalAxis) {
+                case Axis.X:
+                    vp.X += poff;
+                    break;
+                case Axis.Y:
+                    vp.Y += poff;
+                    break;
+                case Axis.Z:
+                    vp.Z += poff;
+                    break;
+            }
+            switch(q.NormalAxis) {
+                case Axis.X:
+                    vp.X += off;
+                    break;
+                case Axis.Y:
+                    vp.Y += off;
+                    break;
+                case Axis.Z:
+                    vp.Z += off;
+                    break;
+            }
+            return vp;
         }
     }
 
@@ -181,7 +260,7 @@ namespace HexTex.Recuberation {
         public void AddRandomWalkers(int cubeCount, int seed, int stepFramesMin, int stepFramesMag = 8, int stepFramesVar = 5) {
             var rnd = new PRNG(seed);
             for(int i = 0; i < cubeCount; i++) {
-                var controller = new RollingController();
+                var controller = new RollingController(volume);
                 Quad quad = null;
                 while(quad == null || quad.IsOccupied) {
                     quad = map.Quads[rnd.Next(map.Quads.Count)];
