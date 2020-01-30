@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace HexTex.Recuberation {
-    public class CachedVolume : IBinaryVolume {
+    public class CachedVolume : IBinaryVolumeWritable {
         private bool inverse;
         private Bounds3D bounds;
         private byte[] data;
@@ -22,6 +22,24 @@ namespace HexTex.Recuberation {
             if(index < 0)
                 return inverse;
             return inverse ? data[index] == 0 : data[index] != 0;
+        }
+        public void SetIsOccupied(int x, int y, int z, bool yes) {
+            int index = GetIndex(x, y, z);
+            if(index < 0)
+                return;
+            data[index] = (byte)(inverse ? (yes ? 0 : 1) : (yes ? 1 : 0));
+        }
+        public CachedVolume(IBinaryVolume source, bool inverse = false)
+            : this(source.Bounds, inverse) {
+            var s = source.Bounds;
+            for(var z = s.Zmin; z < s.Zmax; z++) {
+                for(var y = s.Ymin; y < s.Ymax; y++) {
+                    for(var x = s.Xmin; x < s.Xmax; x++) {
+                        bool o = source.IsOccupied(x, y, z);
+                        SetIsOccupied(x, y, z, inverse ? !o : o);
+                    }
+                }
+            }
         }
         public void MakeBox(Bounds3D s, bool occupy) {
             for(var z = s.Zmin; z < s.Zmax; z++) {

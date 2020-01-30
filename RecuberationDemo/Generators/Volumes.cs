@@ -19,11 +19,11 @@ namespace HexTex.Recuberation.Generators {
             this.inverse = inverse;
             this.bounds = new Bounds3D() {
                 Xmin = (int)Math.Floor(x - r),
-                Xmax = (int)Math.Ceiling(x + r),
+                Xmax = 1 + (int)Math.Ceiling(x + r),
                 Ymin = (int)Math.Floor(y - r),
-                Ymax = (int)Math.Ceiling(y + r),
+                Ymax = 1 + (int)Math.Ceiling(y + r),
                 Zmin = (int)Math.Floor(z - r),
-                Zmax = (int)Math.Ceiling(z + r)
+                Zmax = 1 + (int)Math.Ceiling(z + r)
             };
         }
         public Bounds3D Bounds {

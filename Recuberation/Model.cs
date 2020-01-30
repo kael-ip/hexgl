@@ -31,6 +31,10 @@ namespace HexTex.Recuberation {
         bool IsOccupied(int x, int y, int z);
     }
 
+    public interface IBinaryVolumeWritable : IBinaryVolume {
+        void SetIsOccupied(int x, int y, int z, bool yes);
+    }
+
     public enum Axis { X = 0, Y = 1, Z = 2 }
 
     public struct VectorI2D {
