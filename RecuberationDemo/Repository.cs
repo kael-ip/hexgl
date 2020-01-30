@@ -17,6 +17,7 @@ namespace HexTex.Recuberation {
 
         public WalkingSystem sysCube1;
         public WalkingSystem sysSphere3;
+        public WalkingSystem sysSphere3x;
         public WalkingSystem sysSphereInside;
         public WalkingSystem sysPlane;
         public WalkingSystem sysMetaBall4;
@@ -42,6 +43,7 @@ namespace HexTex.Recuberation {
             objBannerMhm = CreateBanner(Properties.Resources.rcbmhm);
             sysCube1 = CreateEarthCube();
             sysSphere3 = CreateEarthSphere3();
+            sysSphere3x = CreateEarthSphere3x();
             sysPlane = CreateEarthPlane();
             sysSphereInside = CreateEarthSphereInside();
             sysMetaBall4 = CreateEarthMB4();
@@ -104,6 +106,12 @@ namespace HexTex.Recuberation {
             var volume = new SphereVolume(0, 0, 0, 3.3f);
             var system = CreateSystem(volume);
             system.AddRandomWalkers(7, 8465, 64, 8, 5);
+            return system;
+        }
+        private WalkingSystem CreateEarthSphere3x() {
+            var volume = new SphereVolume(0, 0, 0, 3.3f);
+            var system = CreateSystem(volume);
+            system.AddRandomWalkers(21, 8465, 64, 8, 5);
             return system;
         }
         private WalkingSystem CreateEarthSphereInside() {
