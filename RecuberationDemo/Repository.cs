@@ -83,7 +83,7 @@ namespace HexTex.Recuberation {
         private WalkingSystem CreateEarthPlane() {
             QuadMap quadMap = new QuadMap();
             quadMap.BuildPlane(10, 10);
-            var system = new WalkingSystem(quadMap);
+            var system = new WalkingSystem(quadMap, null);
             system.AddRandomWalkers(10, 657, 32, 4, 5);
             return system;
         }
@@ -91,7 +91,7 @@ namespace HexTex.Recuberation {
             QuadMap quadMap = new QuadMap();
             var cv = new CachedVolume(volume);
             quadMap.Build(cv);
-            var system = new WalkingSystem(quadMap);
+            var system = new WalkingSystem(quadMap, cv);
             return system;
         }
         private WalkingSystem CreateEarthCube() {
@@ -141,7 +141,7 @@ namespace HexTex.Recuberation {
             volume.MakeBox(new Bounds3D(2, 5, 2, 5, 2, 5), false);
             QuadMap quadMap = new QuadMap();
             quadMap.Build(volume);
-            var system = new WalkingSystem(quadMap);
+            var system = new WalkingSystem(quadMap, volume);
             system.AddRandomWalkers(12, 4537, 64, 8, 4);
             return system;
         }
@@ -161,7 +161,7 @@ namespace HexTex.Recuberation {
             }
             QuadMap quadMap = new QuadMap();
             quadMap.Build(volume);
-            var system = new WalkingSystem(quadMap);
+            var system = new WalkingSystem(quadMap, volume);
             system.AddRandomWalkers(12, 4537, 64, 8, 4);
             return system;
         }

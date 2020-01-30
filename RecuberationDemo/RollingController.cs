@@ -167,10 +167,12 @@ namespace HexTex.Recuberation {
 
     class WalkingSystem {
         private QuadMap map;
+        private IBinaryVolumeWritable volume;
         private QMesh mesh;
         private List<RollingController> controllers;
-        public WalkingSystem(QuadMap map) {
+        public WalkingSystem(QuadMap map, IBinaryVolumeWritable volume) {
             this.map = map;
+            this.volume = volume;
             controllers = new List<RollingController>();
             Trace.TraceInformation("Quads count = {0}", map.Quads.Count);
             Trace.TraceInformation("Quad groups = {0}", map.CheckConnectivity());
