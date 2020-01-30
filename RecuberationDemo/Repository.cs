@@ -87,27 +87,28 @@ namespace HexTex.Recuberation {
             system.AddRandomWalkers(10, 657, 32, 4, 5);
             return system;
         }
+        private WalkingSystem CreateSystem(IBinaryVolume volume) {
+            QuadMap quadMap = new QuadMap();
+            var cv = new CachedVolume(volume);
+            quadMap.Build(cv);
+            var system = new WalkingSystem(quadMap);
+            return system;
+        }
         private WalkingSystem CreateEarthCube() {
             var volume = new SphereVolume(0, 0, 0, 0.8f);
-            QuadMap quadMap = new QuadMap();
-            quadMap.Build(volume);
-            var system = new WalkingSystem(quadMap);
+            var system = CreateSystem(volume);
             system.AddRandomWalkers(1, 1432, 32, 0);
             return system;
         }
         private WalkingSystem CreateEarthSphere3() {
             var volume = new SphereVolume(0, 0, 0, 3.3f);
-            QuadMap quadMap = new QuadMap();
-            quadMap.Build(volume);
-            var system = new WalkingSystem(quadMap);
+            var system = CreateSystem(volume);
             system.AddRandomWalkers(7, 8465, 64, 8, 5);
             return system;
         }
         private WalkingSystem CreateEarthSphereInside() {
             var volume = new SphereVolume(0, 0, 0, 7.8f, true);
-            QuadMap quadMap = new QuadMap();
-            quadMap.Build(volume);
-            var system = new WalkingSystem(quadMap);
+            var system = CreateSystem(volume);
             system.AddRandomWalkers(37, 8465, 64, 16, 6);
             return system;
         }
@@ -121,9 +122,7 @@ namespace HexTex.Recuberation {
             volume.AddBall(3, 2, 3, 2.3f);
             volume.AddBall(2, -2, -2, 2.3f);
             volume.AddBall(-2, -2, 2, 2.3f);
-            QuadMap quadMap = new QuadMap();
-            quadMap.Build(volume);
-            var system = new WalkingSystem(quadMap);
+            var system = CreateSystem(volume);
             system.AddRandomWalkers(9, 2020, 64, 4, 5);
             return system;
         }
@@ -131,9 +130,7 @@ namespace HexTex.Recuberation {
             var volume = new MetaballVolume(new Bounds3D(-10, 10, -10, 10, -10, 10), 1.2f);
             volume.AddBall(3, 3, 1, 2.5f);
             volume.AddBall(-2, -1, -2, 3.4f);
-            QuadMap quadMap = new QuadMap();
-            quadMap.Build(volume);
-            var system = new WalkingSystem(quadMap);
+            var system = CreateSystem(volume);
             system.AddRandomWalkers(9, 6345, 64, 8, 4);
             return system;
         }
