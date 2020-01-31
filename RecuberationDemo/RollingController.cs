@@ -132,18 +132,11 @@ namespace HexTex.Recuberation {
             next = null;
             edge = null;
             int attempt = 0;
-            while(next == null || IsOccupied(next, quad)) {
-                if(attempt > 10) {//abort
+            while(true) {
+                if(attempt > 5) {//abort
                     next = quad;
                     rq = 0;
                     break;
-                }
-                if(attempt > 0) {
-                    if(attempt % 2 == 1) {
-                        dirAxis = (Axis)(((int)dirAxis + 1) % 3);
-                    } else {
-                        dirIsNegative = !dirIsNegative;
-                    }
                 }
                 edge = quad.GetEdge(dirAxis, dirIsNegative);
                 if(edge != null) {
@@ -155,6 +148,17 @@ namespace HexTex.Recuberation {
                         rIsNegative = true;
                     }
                     rq = edge.Angle - 1;
+                    if(!IsOccupied(next, quad)) {
+                        break;
+                    }
+                }
+                if((attempt % 2) == 0) {
+                    dirAxis = (Axis)(((int)dirAxis + 1) % 3);
+                }
+                if(attempt == 0) {
+                    dirIsNegative = (new PRNG().Next() & (1 << 5)) == 0;
+                } else {
+                    dirIsNegative = !dirIsNegative;
                 }
                 attempt++;
             }
