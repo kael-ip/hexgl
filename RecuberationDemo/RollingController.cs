@@ -165,7 +165,10 @@ namespace HexTex.Recuberation {
             SetIsOccupied(next, true, quad);
             quad.Color = color;
             System.Diagnostics.Trace.TraceInformation("Direction: {1}{0}", dirAxis, dirIsNegative ? "-" : "+");
-            //if actual angle == 0, repeat, limit retries
+            if(dirAxis == next.NormalAxis) {
+                dirAxis = quad.NormalAxis;
+                dirIsNegative = (rq == 0) ? quad.NormalIsNegative : !quad.NormalIsNegative;
+            }
         }
         private void SetIsOccupied(Quad q, bool yes, Quad prev) {
             q.IsOccupied = yes;
