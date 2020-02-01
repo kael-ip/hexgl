@@ -206,17 +206,7 @@ namespace HexTex.Recuberation {
             if(q.NormalIsNegative) {
                 off = -off - 1;
             }
-            switch(q.NormalAxis) {
-                case Axis.X:
-                    vp.X += off;
-                    break;
-                case Axis.Y:
-                    vp.Y += off;
-                    break;
-                case Axis.Z:
-                    vp.Z += off;
-                    break;
-            }
+            vp.Offset(q.NormalAxis, off);
             return vp;
         }
         private VectorI3D GetVoxelLocation(Quad q, int off, Quad prev) {
@@ -225,30 +215,11 @@ namespace HexTex.Recuberation {
                 off = -off - 1;
             }
             int poff = prev.NormalIsNegative ? -1 : 1;
-            switch(prev.NormalAxis) {
-                case Axis.X:
-                    vp.X += poff;
-                    break;
-                case Axis.Y:
-                    vp.Y += poff;
-                    break;
-                case Axis.Z:
-                    vp.Z += poff;
-                    break;
-            }
-            switch(q.NormalAxis) {
-                case Axis.X:
-                    vp.X += off;
-                    break;
-                case Axis.Y:
-                    vp.Y += off;
-                    break;
-                case Axis.Z:
-                    vp.Z += off;
-                    break;
-            }
+            vp.Offset(prev.NormalAxis, poff);
+            vp.Offset(q.NormalAxis, off);
             return vp;
         }
+
     }
 
     class WalkingSystem {

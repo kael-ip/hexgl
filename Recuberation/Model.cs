@@ -61,6 +61,19 @@ namespace HexTex.Recuberation {
         public override string ToString() {
             return string.Format("{{{0}, {1}, {2}}}", X, Y, Z);
         }
+        public void Offset(Axis axis, int value) {
+            switch(axis) {
+                case Axis.X:
+                    X += value;
+                    break;
+                case Axis.Y:
+                    Y += value;
+                    break;
+                case Axis.Z:
+                    Z += value;
+                    break;
+            }
+        }
     }
 
     public class Quad {
