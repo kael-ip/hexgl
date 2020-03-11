@@ -26,6 +26,7 @@ namespace HexTex.Recuberation {
         public WalkingSystem sysCuboid1;
         public WalkingSystem sysCuboid2;
         public WalkingSystem sysCuboid3;
+        public WalkingSystem sysLensHedge;
         public Mesh objCube;
         public Mesh objBanner;
         public Mesh objBannerMhm;
@@ -59,6 +60,7 @@ namespace HexTex.Recuberation {
             objPyramid2 = CreatePyramid(4);
             objPyramid3 = CreatePyramid(5);
             objFirTree = CreateFirTree();
+            sysLensHedge = CreateLensHedge(8f, 2.5f);
         }
         private Mesh CreateCube() {
             QuadMap quadMap = new QuadMap();
@@ -171,6 +173,24 @@ namespace HexTex.Recuberation {
             quadMap.Build(volume);
             var system = new WalkingSystem(quadMap, volume);
             system.AddRandomWalkers(12, 4537, 64, 8, 4);
+            return system;
+        }
+        private WalkingSystem CreateLensHedge(float radii, float overlap) {
+            int maxb = (int)Math.Ceiling(radii * 2 - overlap);
+            float[] posi = new float[] { radii - overlap, overlap - radii };
+            var balls = NumericsHelper.Combine(posi, posi, posi)
+                .Select(p =>
+                new SphereVolume(p[0], p[1], p[2], radii)).ToArray();
+            var g = new UnionVolume(false, NumericsHelper.Combine(balls, balls)
+                .Where(b => b[0] != b[1])
+                .Select(b =>
+                new IntersectionVolume(false, b[0], b[1]))
+                .ToArray());
+            var volume = new CachedVolume(g);
+            QuadMap quadMap = new QuadMap();
+            quadMap.Build(volume);
+            var system = new WalkingSystem(quadMap, volume);
+            //system.AddRandomWalkers(12, 8317, 64, 8, 4);
             return system;
         }
         private Mesh CreateSlab() {

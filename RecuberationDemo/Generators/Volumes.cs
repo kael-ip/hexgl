@@ -97,4 +97,65 @@ namespace HexTex.Recuberation.Generators {
             return z < heights[y * xsize + x];
         }
     }
+
+    class UnionVolume : IBinaryVolume {
+        private IBinaryVolume[] parts;
+        private bool inverse;
+        private Bounds3D bounds;
+        public UnionVolume(bool inverse, params IBinaryVolume[] parts) {
+            this.inverse = inverse;
+            this.parts = parts;
+            this.bounds = new Bounds3D() {
+                Xmin = parts.Min(p => p.Bounds.Xmin),
+                Xmax = parts.Max(p => p.Bounds.Xmax) + 1,
+                Ymin = parts.Min(p => p.Bounds.Ymin),
+                Ymax = parts.Max(p => p.Bounds.Ymax) + 1,
+                Zmin = parts.Min(p => p.Bounds.Zmin),
+                Zmax = parts.Max(p => p.Bounds.Zmax) + 1
+            };
+        }
+        public Bounds3D Bounds {
+            get { return bounds; }
+        }
+        public bool IsOccupied(int x, int y, int z) {
+            bool result = false;
+            foreach(var p in parts) {
+                if(p.IsOccupied(x, y, z)) {
+                    result = true;
+                    break;
+                }
+            }
+            return inverse ? !result : result;
+        }
+    }
+    class IntersectionVolume : IBinaryVolume {
+        private IBinaryVolume[] parts;
+        private bool inverse;
+        private Bounds3D bounds;
+        public IntersectionVolume(bool inverse, params IBinaryVolume[] parts) {
+            this.inverse = inverse;
+            this.parts = parts;
+            this.bounds = new Bounds3D() {
+                Xmin = parts.Min(p => p.Bounds.Xmin),
+                Xmax = parts.Max(p => p.Bounds.Xmax) + 1,
+                Ymin = parts.Min(p => p.Bounds.Ymin),
+                Ymax = parts.Max(p => p.Bounds.Ymax) + 1,
+                Zmin = parts.Min(p => p.Bounds.Zmin),
+                Zmax = parts.Max(p => p.Bounds.Zmax) + 1
+            };
+        }
+        public Bounds3D Bounds {
+            get { return bounds; }
+        }
+        public bool IsOccupied(int x, int y, int z) {
+            bool result = true;
+            foreach(var p in parts) {
+                if(!p.IsOccupied(x, y, z)) {
+                    result = false;
+                    break;
+                }
+            }
+            return inverse ? !result : result;
+        }
+    }
 }

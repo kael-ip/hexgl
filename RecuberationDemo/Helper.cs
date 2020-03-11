@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using HexTex.OpenGL;
@@ -158,6 +159,21 @@ namespace HexTex.Recuberation {
             a[10] = m.M42;
             a[11] = m.M43;
             return a;
+        }
+        public static IEnumerable<T[]> Combine<T>(params IEnumerable<T>[] sources) {
+            if(sources.Length == 0)
+                return Enumerable.Empty<T[]>();
+            var q = sources[0].Select(s => new T[] { s });
+            for(int i = 1; i < sources.Length; i++) {
+                var sn = sources[i];
+                q = q.SelectMany(s => sn.Select(se => {
+                    var r = new T[s.Length + 1];
+                    Array.Copy(s, r, s.Length);
+                    r[s.Length] = se;
+                    return r;
+                }));
+            }
+            return q;
         }
     }
 

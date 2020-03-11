@@ -30,6 +30,7 @@ namespace HexTex.Recuberation {
             repository = new Repository();
             repository.Init();
             presets = new Preset[]{
+                new Preset(repository.sysLensHedge, 0,0,0,24,1),
                 new Preset(repository.sysSphere3x, 0,0,0,10,1),
                 new Preset(repository.sysCuboid3, 0,0,0,25,3),
                 new Preset(repository.sysCuboid0, 0,0,0,15,3),
