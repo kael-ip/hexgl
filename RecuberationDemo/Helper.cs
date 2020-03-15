@@ -213,21 +213,32 @@ namespace HexTex.Recuberation {
 
     class QMesh : Mesh {
         private IList<Quad> quads;
+        private IList<int> p2q;
         public IList<Quad> Quads { get { return quads; } }
         public QMesh(IList<Quad> quads)
             : base(4, quads.Count, true, false) {
             this.quads = quads;
-            //int offset = 0;
             Trace.TraceInformation("Quads count = {0}", quads.Count);
             var geom = new Geom();
+            p2q = new List<int>();
+            int pindex = 0;
+            int qindex = 0;
             foreach(var quad in quads) {
-                //offset = quad.FillQuadVerts(VertexBuffer, NormalBuffer, offset);
-                quad.FillQuadVerts(geom);
+                //quad.FillQuadVerts(geom);
+                quad.FillTriVerts(geom);
+                while(pindex < geom.PolyCount) {
+                    p2q.Add(qindex);
+                    pindex++;
+                }
+                qindex++;
             }
             float[] vb, nb;
             var n = geom.Fill(out vb, out nb);
-            System.Diagnostics.Debug.Assert(n == 4);
+            System.Diagnostics.Debug.Assert(n == 3);
             SetBuffers(vb, nb, n);
+        }
+        public Quad GetQuadByPrimitive(int i) {
+            return quads[p2q[i]];
         }
     }
 

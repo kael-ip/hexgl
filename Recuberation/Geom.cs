@@ -17,6 +17,7 @@ namespace HexTex.Recuberation {
         List<Vertex> vb = new List<Vertex>();
         List<Vertex> nb = new List<Vertex>();
         List<Polygon> ib = new List<Polygon>();
+        public int PolyCount { get { return ib.Count; } }
         public int AddVertex(float x, float y, float z) {
             return AddVertex(vb, x, y, z);
         }
