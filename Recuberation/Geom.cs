@@ -9,14 +9,13 @@ namespace HexTex.Recuberation {
     struct Vertex {
         public float x, y, z;
     }
-    struct Polygon {
-        public int[] vs;
-        public int[] nvs;
+    struct PolyVertex {
+        public int vi, ni;
     }
     public class Geom {
         List<Vertex> vb = new List<Vertex>();
         List<Vertex> nb = new List<Vertex>();
-        List<Polygon> ib = new List<Polygon>();
+        List<PolyVertex[]> ib = new List<PolyVertex[]>();
         public int PolyCount { get { return ib.Count; } }
         public int AddVertex(float x, float y, float z) {
             return AddVertex(vb, x, y, z);
@@ -42,26 +41,23 @@ namespace HexTex.Recuberation {
             return AddPoly(nv, v0, v1, v2);
         }
         public int AddTriangle(int v0, int v1, int v2, int nv0, int nv1, int nv2) {
-            var poly = new Polygon();
-            poly.vs = new int[3];
-            poly.nvs = new int[3];
-            poly.vs[0] = v0;
-            poly.vs[1] = v1;
-            poly.vs[2] = v2;
-            poly.nvs[0] = nv0;
-            poly.nvs[1] = nv1;
-            poly.nvs[2] = nv2;
+            var poly = new PolyVertex[3];
+            poly[0].vi = v0;
+            poly[1].vi = v1;
+            poly[2].vi = v2;
+            poly[0].ni = nv0;
+            poly[1].ni = nv1;
+            poly[2].ni = nv2;
             ib.Add(poly);
             return ib.Count - 1;
         }
         public int AddPoly(int nv, params int[] va) {
-            var vs = new int[va.Length];
-            var nvs = new int[va.Length];
+            var poly = new PolyVertex[va.Length];
             for(int i = 0; i < va.Length; i++) {
-                vs[i] = va[i];
-                nvs[i] = nv;
+                poly[i].vi = va[i];
+                poly[i].ni = nv;
             }
-            ib.Add(new Polygon() { vs = vs, nvs = nvs });
+            ib.Add(poly);
             return ib.Count - 1;
         }
         private void FillVertex(List<float> vbi, List<Vertex> b, int idx) {
@@ -77,14 +73,13 @@ namespace HexTex.Recuberation {
             for(var i = 0; i < ib.Count; i++) {
                 var poly = ib[i];
                 if(i == 0) {
-                    n = poly.vs.Length;
+                    n = poly.Length;
                 } else {
-                    System.Diagnostics.Debug.Assert(n == poly.vs.Length);
+                    System.Diagnostics.Debug.Assert(n == poly.Length);
                 }
-                System.Diagnostics.Debug.Assert(n == poly.nvs.Length);
                 for(var j = 0; j < n; j++) {
-                    FillVertex(vbi, vb, poly.vs[j]);
-                    FillVertex(nbi, nb, poly.nvs[j]);
+                    FillVertex(vbi, vb, poly[j].vi);
+                    FillVertex(nbi, nb, poly[j].ni);
                 }
             }
             vbuffer = vbi.ToArray();
