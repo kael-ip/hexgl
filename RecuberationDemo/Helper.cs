@@ -203,6 +203,12 @@ namespace HexTex.Recuberation {
                 TexUVBuffer = new float[2 * length * count];
             }
         }
+        protected void SetBuffers(float[] vb, float[] nb, int plength) {
+            this.VertexBuffer = vb;
+            this.NormalBuffer = nb;
+            this.PrimitiveLength = plength;
+            this.PrimitiveCount = vb.Length / (3 * plength);
+        }
     }
 
     class QMesh : Mesh {
@@ -211,11 +217,17 @@ namespace HexTex.Recuberation {
         public QMesh(IList<Quad> quads)
             : base(4, quads.Count, true, false) {
             this.quads = quads;
-            int offset = 0;
+            //int offset = 0;
             Trace.TraceInformation("Quads count = {0}", quads.Count);
+            var geom = new Geom();
             foreach(var quad in quads) {
-                offset = quad.FillQuadVerts(VertexBuffer, NormalBuffer, offset);
+                //offset = quad.FillQuadVerts(VertexBuffer, NormalBuffer, offset);
+                quad.FillQuadVerts(geom);
             }
+            float[] vb, nb;
+            var n = geom.Fill(out vb, out nb);
+            System.Diagnostics.Debug.Assert(n == 4);
+            SetBuffers(vb, nb, n);
         }
     }
 
