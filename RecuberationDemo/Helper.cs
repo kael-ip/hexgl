@@ -232,13 +232,15 @@ namespace HexTex.Recuberation {
                 }
                 qindex++;
             }
+            geom = geom.CoalescePolys();
             float[] vb, nb;
             var n = geom.Fill(out vb, out nb);
             System.Diagnostics.Debug.Assert(n == 3);
             SetBuffers(vb, nb, n);
         }
         public Quad GetQuadByPrimitive(int i) {
-            return quads[p2q[i]];
+            return quads[0];
+            //return quads[p2q[i]];
         }
     }
 
