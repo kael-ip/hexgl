@@ -233,6 +233,8 @@ namespace HexTex.Recuberation {
                 qindex++;
             }
             geom = geom.CoalescePolys();
+            Trace.TraceInformation("Polys count = {0}", geom.PolyCount);
+            Trace.TraceInformation("Tris count = {0}", geom.GetTrisCount());
             float[] vb, nb;
             var n = geom.Fill(out vb, out nb);
             System.Diagnostics.Debug.Assert(n == 3);
