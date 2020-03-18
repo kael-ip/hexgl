@@ -117,10 +117,10 @@ namespace HexTex.Recuberation {
                             var p2vprevprev = poly2.SafeGet(p2vi - 2);
                             var cpa = CalcNormalValue(pvprev, pv, p2vnext);
                             var cpb = CalcNormalValue(p2vprevprev, pvnext, pvnextnext);
-                            if((cpa == 0 || cpa == n) && (cpb == 0 || cpb == n)) { // both resulting corners are not concave
+                            if(IsConvex(n, cpa) && IsConvex(n, cpb)) { // both resulting corners are not concave
                                 //merge polys
                                 for(var k = 0; k < poly2.vs.Count - 2; k++) {
-                                    poly.vs.Insert((pvi + 1 + k) % poly.vs.Count,
+                                    poly.vs.Insert((pvi + 1 + k),
                                         poly2.vs[(p2vi + 1 + k) % poly2.vs.Count]);
                                 }
                                 if(cpa == 0) { //remove flat vertex
@@ -129,6 +129,7 @@ namespace HexTex.Recuberation {
                                 if(cpb == 0) { //remove flat vertex
                                     poly.vs.Remove(pvnext);
                                 }
+                                System.Diagnostics.Debug.Assert(IsConvex(poly), string.Format("Not convex: {0}", poly));
                                 return true;
                             }
                         }
@@ -155,13 +156,21 @@ namespace HexTex.Recuberation {
             }
             return success;
         }
+        private bool IsConvex(float n, float nv) {
+            return (nv == 0 || nv < 0 && n < 0 || nv > 0 && n > 0);
+        }
+        private bool IsConvex(float n, int v0, int v1, int v2) {
+            var nv = CalcNormalValue(v0, v1, v2);
+            return IsConvex(n, nv);
+        }
         private bool IsConvex(Polygon p) {
             var n = GetNormalValue(p.ni);
             for(int i = 0; i < p.vs.Count; i++) {
                 var v0 = p.vs[i];
-                var v1 = p.vs[(i + 1) % p.vs.Count];
-                var v2 = p.vs[(i + 2) % p.vs.Count];
-                if(CalcNormalValue(v0, v1, v2) != n)
+                var v1 = p.SafeGet(i + 1);
+                var v2 = p.SafeGet(i + 2);
+                var nv = CalcNormalValue(v0, v1, v2);
+                if(!IsConvex(n, v0, v1, v2))
                     return false;
             }
             return true;
