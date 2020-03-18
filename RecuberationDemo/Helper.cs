@@ -215,34 +215,32 @@ namespace HexTex.Recuberation {
         private IList<Quad> quads;
         private IList<int> p2q;
         public IList<Quad> Quads { get { return quads; } }
-        public QMesh(IList<Quad> quads)
+        public QMesh(IList<Quad> quads, bool coalesce = true)
             : base(4, quads.Count, true, false) {
             this.quads = quads;
             Trace.TraceInformation("Quads count = {0}", quads.Count);
             var geom = new Geom();
-            p2q = new List<int>();
-            int pindex = 0;
-            int qindex = 0;
-            foreach(var quad in quads) {
-                //quad.FillQuadVerts(geom);
-                quad.FillTriVerts(geom);
-                while(pindex < geom.PolyCount) {
-                    p2q.Add(qindex);
-                    pindex++;
+            for(int i = 0; i < quads.Count; i++) {
+                geom.SetPolyTag(i);
+                if(true) {
+                    quads[i].FillQuadVerts(geom);
+                } else {
+                    quads[i].FillTriVerts(geom);
                 }
-                qindex++;
             }
-            geom = geom.CoalescePolys();
+            if(coalesce) {
+                geom = geom.CoalescePolys();
+            }
             Trace.TraceInformation("Polys count = {0}", geom.PolyCount);
             Trace.TraceInformation("Tris count = {0}", geom.GetTrisCount());
             float[] vb, nb;
-            var n = geom.Fill(out vb, out nb);
+            p2q = new List<int>();
+            var n = geom.Fill(out vb, out nb, p2q);
             System.Diagnostics.Debug.Assert(n == 3);
             SetBuffers(vb, nb, n);
         }
         public Quad GetQuadByPrimitive(int i) {
-            return quads[0];
-            //return quads[p2q[i]];
+            return quads[(p2q != null) ? p2q[i] : 0];
         }
     }
 

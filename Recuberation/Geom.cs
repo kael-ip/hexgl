@@ -21,6 +21,7 @@ namespace HexTex.Recuberation {
     class Polygon {
         public List<int> vs { get; private set; }
         public int ni;
+        public int tag;
         public Polygon(int ni, params int[] vs) {
             this.ni = ni;
             this.vs = new List<int>(vs);
@@ -28,6 +29,7 @@ namespace HexTex.Recuberation {
         public Polygon(Polygon p) {
             this.ni = p.ni;
             this.vs = new List<int>(p.vs);
+            this.tag = p.tag;
         }
         public int SafeGet(int index) {
             while(index < 0)
@@ -65,6 +67,10 @@ namespace HexTex.Recuberation {
             b.Add(new Vertex() { x = x, y = y, z = z });
             return idx;
         }
+        private int currentTag;
+        public void SetPolyTag(int tag) {
+            this.currentTag = tag;
+        }
         public int AddTriangle(int v0, int v1, int v2) {
             return AddPoly(CalcNormal(v0, v1, v2), v0, v1, v2);
         }
@@ -72,34 +78,39 @@ namespace HexTex.Recuberation {
             throw new NotImplementedException();
         }
         public int AddPoly(int nv, params int[] va) {
-            ib.Add(new Polygon(nv, va));
+            var p = new Polygon(nv, va);
+            p.tag = currentTag;
+            ib.Add(p);
             return ib.Count - 1;
         }
-        private void FillVertex(List<float> vbi, List<Vertex> b, int idx) {
+        private static void FillVertex(List<float> list, List<Vertex> b, int idx) {
             var vertex = b[idx];
-            vbi.Add(vertex.x);
-            vbi.Add(vertex.y);
-            vbi.Add(vertex.z);
+            list.Add(vertex.x);
+            list.Add(vertex.y);
+            list.Add(vertex.z);
         }
-        private void FillTriangle(List<float> vbi, List<float> nbi, int vi, int ni) {
-            FillVertex(vbi, vb, vi);
-            FillVertex(nbi, nb, ni);
+        private void FillVertex(List<float> vblist, List<float> nblist, int vi, int ni) {
+            FillVertex(vblist, vb, vi);
+            FillVertex(nblist, nb, ni);
         }
-        public int Fill(out float[] vbuffer, out float[] nbuffer) {
+        public int Fill(out float[] vbuffer, out float[] nbuffer, IList<int> taglist) {
             // triangulate polys
-            var vbi = new List<float>();
-            var nbi = new List<float>();
+            var vblist = new List<float>();
+            var nblist = new List<float>();
             for(var i = 0; i < ib.Count; i++) {
                 var poly = ib[i];
                 var vz = poly.vs[0];
                 for(var j = 2; j < poly.vs.Count; j++) {
-                    FillTriangle(vbi, nbi, vz, poly.ni);
-                    FillTriangle(vbi, nbi, poly.vs[j - 1], poly.ni);
-                    FillTriangle(vbi, nbi, poly.vs[j], poly.ni);
+                    FillVertex(vblist, nblist, vz, poly.ni);
+                    FillVertex(vblist, nblist, poly.vs[j - 1], poly.ni);
+                    FillVertex(vblist, nblist, poly.vs[j], poly.ni);
+                    if(taglist != null) {
+                        taglist.Add(poly.tag);
+                    }
                 }
             }
-            vbuffer = vbi.ToArray();
-            nbuffer = nbi.ToArray();
+            vbuffer = vblist.ToArray();
+            nbuffer = nblist.ToArray();
             return 3;
         }
         private bool TryCoalesce(Polygon poly, Polygon poly2, float n) {
@@ -195,6 +206,7 @@ namespace HexTex.Recuberation {
                     var rvi = g.AddVertex(v.x, v.y, v.z);
                     rvs.Add(rvi);
                 }
+                g.SetPolyTag(p.tag);
                 g.AddPoly(rni, rvs.ToArray());
             }
             return g;
