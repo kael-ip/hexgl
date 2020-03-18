@@ -149,6 +149,45 @@ namespace HexTex.Recuberation {
         public int FillTriVerts(float[] vbuffer, float[] nbuffer, int offset) { // fill vertex buffer with 6 verts (18 floats)
             throw new NotSupportedException();
         }
+        public void FillQuadVerts(Geom geom) {
+            int nv;
+            int[] vis;
+            FillVerts(geom, out nv, out vis);
+            geom.AddPoly(nv, vis);
+        }
+        public void FillTriVerts(Geom geom) {
+            int nv;
+            int[] vis;
+            FillVerts(geom, out nv, out vis);
+            geom.AddPoly(nv, vis[0], vis[1], vis[2]);
+            geom.AddPoly(nv, vis[0], vis[2], vis[3]);
+        }
+        public void FillVerts(Geom geom, out int nv, out int[] vis) {
+            int a = (int)NormalAxis;
+            Func<int, int, int, int> putv = (x, y, z) => {
+                float[] xyz = new float[3];
+                xyz[(0 + a) % 3] = x;
+                xyz[(1 + a) % 3] = y;
+                xyz[(2 + a) % 3] = z;
+                return geom.AddVertex(xyz[0], xyz[1], xyz[2]);
+            };
+            var ccw = ccwFront ? NormalIsNegative : !NormalIsNegative;
+            vis = new int[4];
+            vis[0] = putv(PlaneValue, LocationOnPlane.X, LocationOnPlane.Y);
+            if(ccw) {
+                vis[1] = putv(PlaneValue, LocationOnPlane.X + 1, LocationOnPlane.Y);
+            } else {
+                vis[1] = putv(PlaneValue, LocationOnPlane.X, LocationOnPlane.Y + 1);
+            }
+            vis[2] = putv(PlaneValue, LocationOnPlane.X + 1, LocationOnPlane.Y + 1);
+            if(ccw) {
+                vis[3] = putv(PlaneValue, LocationOnPlane.X, LocationOnPlane.Y + 1);
+            } else {
+                vis[3] = putv(PlaneValue, LocationOnPlane.X + 1, LocationOnPlane.Y);
+            }
+            float av = NormalIsNegative ? -1.0f : 1.0f;
+            nv = geom.AddNormal((a == 0) ? av : 0, (a == 1) ? av : 0, (a == 2) ? av : 0);
+        }
     }
 
     public class Edge {

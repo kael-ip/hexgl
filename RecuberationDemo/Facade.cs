@@ -217,7 +217,7 @@ void main(void)
 
             for(int i = 0, j = 0; i < mesh.PrimitiveCount; i++, j += mesh.PrimitiveLength) {
                 if(colored) {
-                    int c = ((QMesh)mesh).Quads[i].Color;
+                    int c = ((QMesh)mesh).GetQuadByPrimitive(i).Color;
                     c = palette.GetShadedColor(c, dim);
                     SetColorIndex(c);
                 }
