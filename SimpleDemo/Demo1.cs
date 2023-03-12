@@ -81,7 +81,8 @@ varying float vLightDot;
 void main(void)
 {
 	vec4 texture = texture2D(tTexture, vTexCoord);
-	gl_FragColor = vec4(texture.rgb * mix(1.0, vLightDot * uShadeLight + uAmbientLight, texture.a), 1.0);
+    float lightness = mix(1.0, vLightDot * uShadeLight + uAmbientLight, texture.a);
+	gl_FragColor = vec4(texture.rgb * lightness, 1.0);
 }
 ";
             var vsh = new VertexShader() { Source = vshaderSource };
