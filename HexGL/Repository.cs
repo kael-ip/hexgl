@@ -386,15 +386,15 @@ namespace HexTex.OpenGL {
     public abstract class Shader {
         public string Source { get; set; }
         protected Shader() { }
-        public abstract uint GLType { get; }
+        internal abstract uint GLType { get; }
     }
     public class VertexShader : Shader {
-        public override uint GLType {
+        internal override uint GLType {
             get { return GL.VERTEX_SHADER; }
         }
     }
     public class FragmentShader : Shader {
-        public override uint GLType {
+        internal override uint GLType {
             get { return GL.FRAGMENT_SHADER; }
         }
     }
