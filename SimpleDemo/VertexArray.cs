@@ -6,31 +6,10 @@ using System.Text;
 namespace HexTex.OpenGL {
 
     public abstract class VertexArrayBase : IDisposable {
-        private int length;
-        private int width;
-        public int Length {
-            get {
-                return length;
-            }
-        }
-        public int Width {
-            get {
-                return width;
-            }
-        }
-        public virtual bool Normalized {
-            get {
-                return false;
-            }
-        }
-        public VertexArrayBase(int length, int width) {
-            if(width < 1 || width > 4)
-                throw new ArgumentOutOfRangeException(nameof(width));
-            if(length < 0)
-                throw new ArgumentOutOfRangeException(nameof(length));
-            this.length = length;
-            this.width = width;
-        }
+        public abstract int Length { get; }
+        public abstract int Width { get; }
+        public virtual bool Normalized { get { return false; } }
+        public VertexArrayBase() { }
         public abstract Type ElementType { get; }
         public abstract IntPtr Pointer { get; }
         public abstract int Stride { get; }
@@ -62,28 +41,48 @@ namespace HexTex.OpenGL {
     public class VertexArray<T> : VertexArrayBase where T : struct {
         private T[] data;
         private GCHandle handle;
+        private int length;
+        private int width;
         private bool normalized;
-        public VertexArray(T[] data, int width, bool normalized)
-            : base(data.Length / width, width) {
-            if(data.Length % width != 0)
-                throw new ArgumentException(nameof(width));
+        private int indexOffset;
+        private int indexStride;
+        private int byteOffset;
+        private int byteStride;
+        public VertexArray(T[] data, int width, bool normalized, int stride = 0, int offset = 0) {
+            if(data == null)
+                throw new ArgumentNullException(nameof(data));
+            if(width < 1 || width > 4)
+                throw new ArgumentOutOfRangeException(nameof(width));
+            if(stride < 0 || (stride > 0 && stride < width))
+                throw new ArgumentOutOfRangeException(nameof(stride));
+            indexStride = stride == 0 ? width : stride;
+            if(offset < 0 || offset + width > indexStride)
+                throw new ArgumentOutOfRangeException(nameof(offset));
+            indexOffset = offset;
+            this.width = width;
+            if(data.Length % indexStride != 0)
+                throw new ArgumentException(nameof(stride));
+            this.length = data.Length / indexStride;
             this.data = data;
             this.handle = GCHandle.Alloc(data, GCHandleType.Pinned);
             this.normalized = normalized;
+            int sizeofT = Marshal.SizeOf(typeof(T));
+            byteStride = (indexStride == width) ? 0 : (indexStride * sizeofT);
+            byteOffset = indexOffset * sizeofT;
         }
         public T[] Data { get { return data; } }
-        public override bool Normalized {
-            get {
-                return normalized;
-            }
-        }
+        public override int Length { get { return length; } }
+        public override int Width { get { return width; } }
+        public int IndexStride { get { return indexStride; } }
+        public int IndexOffset { get { return indexOffset; } }
+        public override bool Normalized { get { return normalized; } }
         private void GuardLength(int index) {
             if(index < 0 || index >= Length)
                 throw new ArgumentOutOfRangeException(nameof(index));
         }
         public void SetVertex(int index, T x, T y = default(T), T z = default(T), T w = default(T)) {
             GuardLength(index);
-            int i = index * Width;
+            int i = index * indexStride + indexOffset;
             data[i] = x;
             if(Width < 2)
                 return;
@@ -95,20 +94,16 @@ namespace HexTex.OpenGL {
                 return;
             data[++i] = w;
         }
-        public override Type ElementType {
-            get {
-                return typeof(T);
-            }
-        }
+        public override Type ElementType { get { return typeof(T); } }
         public override IntPtr Pointer {
             get {
                 if(!handle.IsAllocated)
                     return IntPtr.Zero;
-                return handle.AddrOfPinnedObject();
+                return new IntPtr(handle.AddrOfPinnedObject().ToInt64() + byteOffset);
             }
         }
         public override int Stride {
-            get { return 0; }
+            get { return byteStride; }
         }
         protected override void DisposeUnmanaged() {
             base.DisposeUnmanaged();

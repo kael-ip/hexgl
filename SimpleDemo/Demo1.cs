@@ -184,15 +184,15 @@ void main(void)
             float[] angles = new float[] { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
             _uViewAngles.Set(angles);
 
-            _aPoint.Set(cube.VertexArray.Pointer, cube.VertexArray.Width);
+            SetVertexAttribArray(_aPoint, cube.VertexArray);
             if(cube.TexCoordArray != null) {
-                _aTexCoord.Set(cube.TexCoordArray.Pointer, cube.TexCoordArray.Width);
+                SetVertexAttribArray(_aTexCoord, cube.TexCoordArray);
             }
             if(cube.NormalArray != null) {
-                _aLightNormal.Set(cube.NormalArray.Pointer, cube.NormalArray.Width);
+                SetVertexAttribArray(_aLightNormal, cube.NormalArray);
             }
             if(cube.ColorArray != null) {
-                _aColor.Set(cube.ColorArray.Pointer, cube.ColorArray.Width, 0, true, GL.UNSIGNED_BYTE);
+                SetVertexAttribArray(_aColor, cube.ColorArray);
             }
 
             var dt = DateTime.Now;
@@ -211,6 +211,9 @@ void main(void)
 
             gl.Flush();
             gl.Finish();
+        }
+        private void SetVertexAttribArray(AttributeFloat attrib, VertexArrayBase array) {
+            attrib.Set(array.Pointer, array.Width, array.Stride, array.Normalized, typeof(byte).IsAssignableFrom(array.ElementType) ? GL.UNSIGNED_BYTE : GL.FLOAT);
         }
         public override void Dispose() {
             base.Dispose();
