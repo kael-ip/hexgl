@@ -81,39 +81,19 @@ namespace HexTex.OpenGL {
             if(index < 0 || index >= Length)
                 throw new ArgumentOutOfRangeException(nameof(index));
         }
-        private void GuardWidth(int w) {
-            if(w != Width)
-                throw new InvalidOperationException();
-        }
-        public void SetVertex(int index, T x, T y, T z, T w) {
+        public void SetVertex(int index, T x, T y = default(T), T z = default(T), T w = default(T)) {
             GuardLength(index);
-            GuardWidth(4);
-            int i = index * Width;
-            data[i++] = x;
-            data[i++] = y;
-            data[i++] = z;
-            data[i] = w;
-        }
-        public void SetVertex(int index, T x, T y, T z) {
-            GuardLength(index);
-            GuardWidth(3);
-            int i = index * Width;
-            data[i++] = x;
-            data[i++] = y;
-            data[i] = z;
-        }
-        public void SetVertex(int index, T x, T y) {
-            GuardLength(index);
-            GuardWidth(2);
-            int i = index * Width;
-            data[i++] = x;
-            data[i] = y;
-        }
-        public void SetVertex(int index, T x) {
-            GuardLength(index);
-            GuardWidth(1);
             int i = index * Width;
             data[i] = x;
+            if(Width < 2)
+                return;
+            data[++i] = y;
+            if(Width < 3)
+                return;
+            data[++i] = z;
+            if(Width < 4)
+                return;
+            data[++i] = w;
         }
         public override Type ElementType {
             get {
