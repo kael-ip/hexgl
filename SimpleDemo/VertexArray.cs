@@ -4,7 +4,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 namespace HexTex.OpenGL {
-    public abstract class VertexArrayBase {
+
+    public abstract class VertexArrayBase : IDisposable {
         private int length;
         private int width;
         public int Length {
@@ -33,10 +34,37 @@ namespace HexTex.OpenGL {
         public abstract Type ElementType {
             get;
         }
-        internal abstract GCHandle PinData();
+        internal abstract IntPtr Pointer {
+            get;
+        }
+
+        #region IDisposable Support
+        protected virtual void DisposeUnmanaged() {
+            // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+            // TODO: set large fields to null.
+        }
+        private bool isDisposed = false;
+        protected virtual void Dispose(bool disposing) {
+            if(!isDisposed) {
+                if(disposing) {
+                    // TODO: dispose managed state (managed objects).
+                }
+                DisposeUnmanaged();
+                isDisposed = true;
+            }
+        }
+        ~VertexArrayBase() {
+            Dispose(false);
+        }
+        public void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion
     }
     public class VertexArray<T> : VertexArrayBase where T : struct {
         private T[] data;
+        private GCHandle handle;
         private bool normalized;
         public override bool Normalized {
             get {
@@ -46,6 +74,7 @@ namespace HexTex.OpenGL {
         public VertexArray(int length, int width, bool normalized)
             : base(length, width) {
             this.data = new T[length * width];
+            this.handle = GCHandle.Alloc(data, GCHandleType.Pinned);
             this.normalized = normalized;
         }
         private void Check(int index, bool s) {
@@ -80,13 +109,24 @@ namespace HexTex.OpenGL {
             int i = index * Width;
             data[i] = x;
         }
-        internal override GCHandle PinData() {
-            return GCHandle.Alloc(data, GCHandleType.Pinned);
-        }
         public override Type ElementType {
             get {
                 return typeof(T);
             }
+        }
+        internal override IntPtr Pointer {
+            get {
+                if(!handle.IsAllocated)
+                    return IntPtr.Zero;
+                return handle.AddrOfPinnedObject();
+            }
+        }
+        protected override void DisposeUnmanaged() {
+            base.DisposeUnmanaged();
+            if(handle.IsAllocated) {
+                handle.Free();
+            }
+            data = null;
         }
     }
 }

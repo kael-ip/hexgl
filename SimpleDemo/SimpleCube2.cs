@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace HexTex.OpenGL {
-    public class SimpleCube2 {
+    public class SimpleCube2 : IDisposable {
         static int[] loop = new int[] { 0, 1, 2, 2, 3, 0 };
         const int vcount = 36;
         VertexArray<float> aVertex;
@@ -114,6 +114,13 @@ namespace HexTex.OpenGL {
             float e = ((idx >> 1) == (2 - part)) ? 1 : 0;
             return (idx & 1) == 0 ? -e : e;
         }
+        public void Dispose() {
+            aVertex?.Dispose();
+            aTexCoord?.Dispose();
+            aColor?.Dispose();
+            aNormal?.Dispose();
+        }
+
         int[] faces = new int[]{
             4,5,7,6,//near
             0,2,3,1,//far

@@ -30,11 +30,13 @@ namespace HexTex.OpenGL {
         float[] matProjection;
         Size viewportSize;
         Point mousePosition;
+        public Demo1() {
+            cube = new SimpleCube2(100, false, true, true);
+        }
         public override void Prepare(IGL gl) {
             renderer = new Renderer(gl);
             BuildShaders(gl);
             LoadTextures(gl);
-            cube = new SimpleCube2(100, false, true, true);
             SetProjection();
         }
         public override void SetViewportSize(Size size) {
@@ -147,13 +149,9 @@ void main(void)
             float[] angles = new float[] { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
             _uViewAngles.Set(angles);
 
-            var hVertex = cube.VertexArray.PinData();
-            var hTexCoord = cube.TexCoordArray.PinData();
-            var hNormal = cube.NormalArray.PinData();
-
-            _aPoint.Set(hVertex.AddrOfPinnedObject(), cube.VertexArray.Width);
-            _aTexCoord.Set(hTexCoord.AddrOfPinnedObject(), cube.TexCoordArray.Width);
-            _aLightNormal.Set(hNormal.AddrOfPinnedObject(), cube.NormalArray.Width);
+            _aPoint.Set(cube.VertexArray.Pointer, cube.VertexArray.Width);
+            _aTexCoord.Set(cube.TexCoordArray.Pointer, cube.TexCoordArray.Width);
+            _aLightNormal.Set(cube.NormalArray.Pointer, cube.NormalArray.Width);
 
             var dt = DateTime.Now;
             double tRotation = Math.PI * 2 * ((0.001 * dt.Millisecond) + dt.Second) / 60;
@@ -171,11 +169,10 @@ void main(void)
 
             gl.Flush();
             gl.Finish();
-
-            if(hVertex.IsAllocated) hVertex.Free();
-            if(hTexCoord.IsAllocated)hTexCoord.Free();
-            if(hNormal.IsAllocated)hNormal.Free();
         }
-
+        public override void Dispose() {
+            base.Dispose();
+            cube.Dispose();
+        }
     }
 }
