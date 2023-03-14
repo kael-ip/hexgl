@@ -35,26 +35,38 @@ namespace HexTex.OpenGL {
         }
         public SimpleCube2(double size) : this(size, true, true) { }
         public SimpleCube2(double size, bool vcolors, bool tex) : this(size, vcolors, tex, false) { }
-        public SimpleCube2(double size, bool vcolors, bool tex, bool normals) {
-            int vcount = SimpleCubeBuilder.VertexCount;
-            if(tex) {
-                var array1 = new float[vcount * (3 + 2)];
-                if(false) {
-                    aVertex = new VertexArray<float>(array1, 3, false, 5, 2);
-                    aTexCoord = new VertexArray<float>(array1, 2, false, 5, 0);
-                }
-                else {
-                    aVertex = new VertexArray<float>(array1, 3, false, 5, 0);
-                    aTexCoord = new VertexArray<float>(array1, 2, false, 5, 3);
-                }
+        public SimpleCube2(double size, bool vcolors, bool tex, bool normals, int mode = 0) {
+            if(mode == 0) {
+                InitOld(size, tex, normals);
+            }
+            else if(mode == 1) {
+                InitInterleaved(size, true, normals);
             }
             else {
-                aVertex = new SimpleVertexArray<float>(vcount, 3, false);
-                //aTexCoord = tex ? new SimpleVertexArray<float>(vcount, 2, false) : null;
+                InitInterleaved(size, false, normals);
+            }
+            SimpleCubeBuilder.Build(size, aVertex, aTexCoord, aColor, aNormal, vcolors);
+        }
+        void InitInterleaved(double size, bool order, bool normals) {
+            int vcount = SimpleCubeBuilder.VertexCount;
+            var array1 = new float[vcount * (3 + 2)];
+            if(order) {
+                aVertex = new VertexArray<float>(array1, 3, false, 5, 2);
+                aTexCoord = new VertexArray<float>(array1, 2, false, 5, 0);
+            }
+            else {
+                aVertex = new VertexArray<float>(array1, 3, false, 5, 0);
+                aTexCoord = new VertexArray<float>(array1, 2, false, 5, 3);
             }
             aColor = new SimpleVertexArray<byte>(vcount, 4, true);
             aNormal = normals ? new SimpleVertexArray<float>(vcount, 3, false) : null;
-            SimpleCubeBuilder.Build(size, aVertex, aTexCoord, aColor, aNormal, vcolors);
+        }
+        void InitOld(double size, bool tex, bool normals) {
+            int vcount = SimpleCubeBuilder.VertexCount;
+            aVertex = new SimpleVertexArray<float>(vcount, 3, false);
+            aTexCoord = tex ? new SimpleVertexArray<float>(vcount, 2, false) : null;
+            aColor = new SimpleVertexArray<byte>(vcount, 4, true);
+            aNormal = normals ? new SimpleVertexArray<float>(vcount, 3, false) : null;
         }
 
         public void Dispose() {

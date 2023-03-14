@@ -11,6 +11,16 @@ namespace HexTex.OpenGL {
             return new SimpleCube2(100, false, true, true);
         }
     }
+    class CubesDemo1a : CubesDemoBase {
+        protected override SimpleCube2 CreateCube() {
+            return new SimpleCube2(100, false, true, true, mode: 1);
+        }
+    }
+    class CubesDemo1b : CubesDemoBase {
+        protected override SimpleCube2 CreateCube() {
+            return new SimpleCube2(100, false, true, true, mode: 2);
+        }
+    }
     class CubesDemo2 : CubesDemoBase {
         protected override SimpleCube2 CreateCube() {
             return new SimpleCube2(100, false, false, true);

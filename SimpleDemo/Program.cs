@@ -10,6 +10,8 @@ namespace HexTex.OpenGL.SimpleDemo {
             typeof(CubesDemo2),
             typeof(CubesDemo3),
             typeof(CubesDemo4),
+            typeof(CubesDemo1a),
+            typeof(CubesDemo1b),
         };
         static int current = 0, next = 0;
         /// <summary>
