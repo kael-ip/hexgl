@@ -6,7 +6,10 @@ namespace HexTex.OpenGL.SimpleDemo {
     static class Program {
         static bool fullScreen = false;
         static Type[] sequence = new Type[]{
-            typeof(Demo1),
+            typeof(CubesDemo1),
+            typeof(CubesDemo2),
+            typeof(CubesDemo3),
+            typeof(CubesDemo4),
         };
         static int current = 0, next = 0;
         /// <summary>

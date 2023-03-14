@@ -6,7 +6,30 @@ using System.Text;
 
 namespace HexTex.OpenGL {
 
-    class Demo1 : DemoBase {
+    class CubesDemo1 : CubesDemoBase {
+        protected override SimpleCube2 CreateCube() {
+            return new SimpleCube2(100, false, true, true);
+        }
+    }
+    class CubesDemo2 : CubesDemoBase {
+        protected override SimpleCube2 CreateCube() {
+            return new SimpleCube2(100, false, false, true);
+        }
+    }
+    class CubesDemo3 : CubesDemoBase {
+        protected override SimpleCube2 CreateCube() {
+            ambient = 1f;
+            return new SimpleCube2(100, false, false, false);
+        }
+    }
+    class CubesDemo4 : CubesDemoBase {
+        protected override SimpleCube2 CreateCube() {
+            ambient = 1f;
+            return new SimpleCube2(100, true, false, false);
+        }
+    }
+
+    abstract class CubesDemoBase : DemoBase {
         Renderer renderer;
         uint[] textures;
         Program program;
@@ -19,20 +42,23 @@ namespace HexTex.OpenGL {
         AttributeFloat _aPoint;
         AttributeFloat _aLightNormal;
         AttributeFloat _aTexCoord;
+        AttributeFloat _aColor;
         UniformFloat _uAmbientLight;
         UniformFloat _uShadeLight;
         Sampler _tTexture;
         static float iq2 = (float)(1 / Math.Sqrt(2));
         static float iq3 = (float)(1 / Math.Sqrt(3));
         SimpleCube2 cube;
+        protected float ambient = 0.5f;
         float aspect;
         float vpheight = 100;
         float[] matProjection;
         Size viewportSize;
         Point mousePosition;
-        public Demo1() {
-            cube = new SimpleCube2(100, false, true, true);
+        public CubesDemoBase() {
+            cube = CreateCube();
         }
+        protected abstract SimpleCube2 CreateCube();
         public override void Prepare(IGL gl) {
             renderer = new Renderer(gl);
             BuildShaders(gl);
@@ -63,14 +89,17 @@ uniform vec3 uLightVec;
 attribute vec3 aPoint;
 attribute vec3 aLightNormal;
 attribute vec2 aTexCoord;
+attribute vec4 aColor;
 varying vec2 vTexCoord;
 varying float vLightDot;
+varying vec3 vColor;
 void main(void)
 {
 	vec3 position = uViewAngles * (uAngles * aPoint.xyz + uOrigin - uViewOrigin);
     gl_Position = uPerspective * vec4(position.xyz, 1.0);
 	vTexCoord = aTexCoord;
     vLightDot = dot(uViewAngles * (uAngles * aLightNormal), uLightVec);
+    vColor = aColor.rgb;
 }
 ";
             var fshaderSource = @"
@@ -80,11 +109,16 @@ uniform float uShadeLight;
 uniform sampler2D tTexture;
 varying vec2 vTexCoord;
 varying float vLightDot;
+varying vec3 vColor;
 void main(void)
 {
 	vec4 texture = texture2D(tTexture, vTexCoord);
     float lightness = mix(1.0, vLightDot * uShadeLight + uAmbientLight, texture.a);
+  if(uAmbientLight==1.0){
+	gl_FragColor = vec4(vColor, 1.0);
+  }else{
 	gl_FragColor = vec4(texture.rgb * lightness, 1.0);
+  }
 }
 ";
             var vsh = new VertexShader() { Source = vshaderSource };
@@ -107,6 +141,7 @@ void main(void)
             program.Attributes.Add(_aPoint = new AttributeFloat("aPoint", 3));
             program.Attributes.Add(_aLightNormal = new AttributeFloat("aLightNormal", 3));
             program.Attributes.Add(_aTexCoord = new AttributeFloat("aTexCoord", 2));
+            program.Attributes.Add(_aColor = new AttributeFloat("aColor", 4));
             renderer.BuildAll();
         }
         private void LoadTextures(IGL gl) {
@@ -141,7 +176,7 @@ void main(void)
 
             _uPerspective.Set(matProjection);
             _tTexture.Set(0);
-            _uAmbientLight.Set(0.5f);
+            _uAmbientLight.Set(ambient);
             _uShadeLight.Set(0.5f);
             _uLightVec.Set(iq3, -iq3, iq3);
             //_uViewOrigin.Set(0, 0, 500f);
@@ -150,8 +185,15 @@ void main(void)
             _uViewAngles.Set(angles);
 
             _aPoint.Set(cube.VertexArray.Pointer, cube.VertexArray.Width);
-            _aTexCoord.Set(cube.TexCoordArray.Pointer, cube.TexCoordArray.Width);
-            _aLightNormal.Set(cube.NormalArray.Pointer, cube.NormalArray.Width);
+            if(cube.TexCoordArray != null) {
+                _aTexCoord.Set(cube.TexCoordArray.Pointer, cube.TexCoordArray.Width);
+            }
+            if(cube.NormalArray != null) {
+                _aLightNormal.Set(cube.NormalArray.Pointer, cube.NormalArray.Width);
+            }
+            if(cube.ColorArray != null) {
+                _aColor.Set(cube.ColorArray.Pointer, cube.ColorArray.Width, 0, true, GL.UNSIGNED_BYTE);
+            }
 
             var dt = DateTime.Now;
             double tRotation = Math.PI * 2 * ((0.001 * dt.Millisecond) + dt.Second) / 60;
