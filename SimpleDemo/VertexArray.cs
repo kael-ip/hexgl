@@ -25,9 +25,9 @@ namespace HexTex.OpenGL {
         }
         public VertexArrayBase(int length, int width) {
             if(width < 1 || width > 4)
-                throw new ArgumentOutOfRangeException("width");
+                throw new ArgumentOutOfRangeException(nameof(width));
             if(length < 0)
-                throw new ArgumentOutOfRangeException("length");
+                throw new ArgumentOutOfRangeException(nameof(length));
             this.length = length;
             this.width = width;
         }
@@ -74,14 +74,18 @@ namespace HexTex.OpenGL {
             this.handle = GCHandle.Alloc(data, GCHandleType.Pinned);
             this.normalized = normalized;
         }
-        private void Check(int index, bool s) {
+        private void GuardLength(int index) {
             if(index < 0 || index >= Length)
-                throw new ArgumentOutOfRangeException("index");
-            if(!s)
+                throw new ArgumentOutOfRangeException(nameof(index));
+        }
+        private void GuardWidth(int w) {
+            if(w != Width)
                 throw new InvalidOperationException();
         }
+
         public void SetVertex(int index, T x, T y, T z, T w) {
-            Check(index, Width == 4);
+            GuardLength(index);
+            GuardWidth(4);
             int i = index * Width;
             data[i++] = x;
             data[i++] = y;
@@ -89,20 +93,23 @@ namespace HexTex.OpenGL {
             data[i] = w;
         }
         public void SetVertex(int index, T x, T y, T z) {
-            Check(index, Width == 3);
+            GuardLength(index);
+            GuardWidth(3);
             int i = index * Width;
             data[i++] = x;
             data[i++] = y;
             data[i] = z;
         }
         public void SetVertex(int index, T x, T y) {
-            Check(index, Width == 2);
+            GuardLength(index);
+            GuardWidth(2);
             int i = index * Width;
             data[i++] = x;
             data[i] = y;
         }
         public void SetVertex(int index, T x) {
-            Check(index, Width == 1);
+            GuardLength(index);
+            GuardWidth(1);
             int i = index * Width;
             data[i] = x;
         }
