@@ -39,10 +39,10 @@ namespace HexTex.OpenGL {
         public SimpleCube2(double size, bool vcolors, bool tex) : this(size, vcolors, tex, false) { }
         public SimpleCube2(double size, bool vcolors, bool tex, bool normals) {
             float hsize = (float)size / 2;
-            aVertex = new VertexArray<float>(vcount, 3, false);
-            aTexCoord = new VertexArray<float>(vcount, 2, false);//if tex?
-            aColor = new VertexArray<byte>(vcount, 4, false);
-            aNormal = normals ? new VertexArray<float>(vcount, 3, false) : null;
+            aVertex = new SimpleVertexArray<float>(vcount, 3, false);
+            aTexCoord = new SimpleVertexArray<float>(vcount, 2, false);//if tex?
+            aColor = new SimpleVertexArray<byte>(vcount, 4, false);
+            aNormal = normals ? new SimpleVertexArray<float>(vcount, 3, false) : null;
 
             for(int f = 0; f < 6; f++) {
                 int si = f * 6;

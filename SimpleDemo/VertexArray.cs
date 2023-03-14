@@ -63,16 +63,19 @@ namespace HexTex.OpenGL {
         private T[] data;
         private GCHandle handle;
         private bool normalized;
+        public VertexArray(T[] data, int width, bool normalized)
+            : base(data.Length / width, width) {
+            if(data.Length % width != 0)
+                throw new ArgumentException(nameof(width));
+            this.data = data;
+            this.handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+            this.normalized = normalized;
+        }
+        public T[] Data { get { return data; } }
         public override bool Normalized {
             get {
                 return normalized;
             }
-        }
-        public VertexArray(int length, int width, bool normalized)
-            : base(length, width) {
-            this.data = new T[length * width];
-            this.handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-            this.normalized = normalized;
         }
         private void GuardLength(int index) {
             if(index < 0 || index >= Length)
@@ -82,7 +85,6 @@ namespace HexTex.OpenGL {
             if(w != Width)
                 throw new InvalidOperationException();
         }
-
         public void SetVertex(int index, T x, T y, T z, T w) {
             GuardLength(index);
             GuardWidth(4);
@@ -134,6 +136,11 @@ namespace HexTex.OpenGL {
                 handle.Free();
             }
             data = null;
+        }
+    }
+    public class SimpleVertexArray<T> : VertexArray<T> where T : struct {
+        public SimpleVertexArray(int length, int width, bool normalized)
+            : base(new T[length * width], width, normalized) {
         }
     }
 }
