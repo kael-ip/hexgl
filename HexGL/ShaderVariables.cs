@@ -171,6 +171,8 @@ namespace HexTex.OpenGL {
         private IntPtr ptr;
         private float[] values;
         private bool isArray = false;
+        private bool normalize = false;
+        private uint itemType;
         public AttributeFloat(string name, int width) : base(name) {
             if(Array.IndexOf(validWidths, width) < 0)
                 throw new ArgumentOutOfRangeException("width");
@@ -182,16 +184,18 @@ namespace HexTex.OpenGL {
             isArray = false;
             IsDirty = true;
         }
-        public void Set(IntPtr ptr, int width, int stride = 0) {
+        public void Set(IntPtr ptr, int width, int stride = 0, bool normalize = false, uint itemType = GL.FLOAT) {
             this.ptr = ptr;
             this.width = width;
             this.stride = stride;
+            this.normalize = normalize;
+            this.itemType = itemType;
             isArray = true;
             IsDirty = true;
         }
         internal override void Setup(IGL gl, uint location) {
             if(isArray) {
-                gl.VertexAttribPointer(location, width, GL.FLOAT, false, stride, ptr);
+                gl.VertexAttribPointer(location, width, itemType, normalize, stride, ptr);
                 gl.EnableVertexAttribArray(location);
             }
             else {
