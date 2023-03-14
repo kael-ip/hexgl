@@ -31,12 +31,9 @@ namespace HexTex.OpenGL {
             this.length = length;
             this.width = width;
         }
-        public abstract Type ElementType {
-            get;
-        }
-        internal abstract IntPtr Pointer {
-            get;
-        }
+        public abstract Type ElementType { get; }
+        public abstract IntPtr Pointer { get; }
+        public abstract int Stride { get; }
 
         #region IDisposable Support
         protected virtual void DisposeUnmanaged() {
@@ -114,12 +111,15 @@ namespace HexTex.OpenGL {
                 return typeof(T);
             }
         }
-        internal override IntPtr Pointer {
+        public override IntPtr Pointer {
             get {
                 if(!handle.IsAllocated)
                     return IntPtr.Zero;
                 return handle.AddrOfPinnedObject();
             }
+        }
+        public override int Stride {
+            get { return 0; }
         }
         protected override void DisposeUnmanaged() {
             base.DisposeUnmanaged();
