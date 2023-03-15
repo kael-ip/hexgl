@@ -77,5 +77,9 @@ namespace HexTex.OpenGL.SimpleDemo {
             base.OnSizeChanged(e);
             demo.SetViewportSize(this.ClientSize);
         }
+        protected override void Dispose(bool disposing) {
+            base.Dispose(disposing);
+            demo.Dispose();
+        }
     }
 }
